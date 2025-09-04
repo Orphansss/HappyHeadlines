@@ -1,5 +1,5 @@
 
-namespace ArticleService
+namespace AS_API
 {
     public class Program
     {
