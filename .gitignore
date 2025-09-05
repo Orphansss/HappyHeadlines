@@ -4,9 +4,12 @@
 ## Get latest from `dotnet new gitignore`
 
 # dotenv files
-.env
+.env.*
+!.env.example
 
 git rm -r --cached .vs
+
+
 
 # User-specific files
 *.rsuser

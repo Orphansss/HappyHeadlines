@@ -25,9 +25,11 @@ namespace AS_API
                 scope.ServiceProvider.GetRequiredService<ArticleDbContext>().Database.Migrate();
 
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
+            app.MapGet("/", () => Results.Redirect("/swagger"));
             app.UseSwagger();
             app.UseSwaggerUI();
             app.MapControllers();
+
             app.Run();
         }
     }

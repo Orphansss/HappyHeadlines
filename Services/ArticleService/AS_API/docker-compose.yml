@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  article-service:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      ConnectionStrings__Default: "Server=${DB_HOST},${DB_PORT};Database=${DB_NAME};User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True"
