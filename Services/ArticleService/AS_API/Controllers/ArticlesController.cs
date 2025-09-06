@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AS_API.Data;
-using AS_API.Models;
-
 
 namespace AS_API.Controllers
 {
