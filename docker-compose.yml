@@ -1,0 +1,100 @@
+services:
+  db-global:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-global:/var/opt/mssql
+
+  db-eu:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-eu:/var/opt/mssql
+
+  db-na:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-na:/var/opt/mssql
+
+  db-sa:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-sa:/var/opt/mssql
+
+  db-af:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-af:/var/opt/mssql
+
+  db-as:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-as:/var/opt/mssql
+
+  db-oc:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-oc:/var/opt/mssql
+
+  db-an:
+    image: ${DB_IMAGE}
+    platform: ${DB_PLATFORM}
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mssql-an:/var/opt/mssql
+
+  article-service:
+    build:
+      context: ./Services/ArticleService/AS_API
+      dockerfile: Dockerfile
+    depends_on:
+      - db-global
+      - db-eu
+      - db-na
+      - db-sa
+      - db-af
+      - db-as
+      - db-oc
+      - db-an
+    deploy:
+      replicas: 3
+    environment:
+      ConnectionStrings__Default: "Server=db-global,1433;Database=${DB_NAME};User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+
+volumes:
+  mssql-global:
+  mssql-eu:
+  mssql-na:
+  mssql-sa:
+  mssql-af:
+  mssql-as:
+  mssql-oc:
+  mssql-an:
