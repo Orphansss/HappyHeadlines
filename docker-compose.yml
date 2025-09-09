@@ -1,100 +1,138 @@
 services:
-  db-global:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
+  articles-europe-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-europe:/var/opt/mssql
+    ports:
+      - "14331:1433"   # Europe
+
+  articles-asia-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-asia:/var/opt/mssql
+    ports:
+      - "14332:1433"   # Asia
+
+  articles-africa-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-africa:/var/opt/mssql
+    ports:
+      - "14333:1433"   # Africa
+
+  articles-northamerica-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-northamerica:/var/opt/mssql
+    ports:
+      - "14334:1433"   # North America
+
+  articles-southamerica-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-southamerica:/var/opt/mssql
+    ports:
+      - "14335:1433"   # South America
+
+  articles-oceania-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-oceania:/var/opt/mssql
+    ports:
+      - "14336:1433"   # Oceania
+
+  articles-antarctica-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-antarctica:/var/opt/mssql
+    ports:
+      - "14337:1433"   # Antarctica
+
+  articles-global-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
     volumes:
       - mssql-global:/var/opt/mssql
+    ports:
+      - "14338:1433"   # Global
 
-  db-eu:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-eu:/var/opt/mssql
 
-  db-na:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-na:/var/opt/mssql
-
-  db-sa:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-sa:/var/opt/mssql
-
-  db-af:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-af:/var/opt/mssql
-
-  db-as:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-as:/var/opt/mssql
-
-  db-oc:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-oc:/var/opt/mssql
-
-  db-an:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - mssql-an:/var/opt/mssql
-
+  # ---------- ArticleService (x-axis split via --scale) ----------
   article-service:
     build:
       context: ./Services/ArticleService/AS_API
       dockerfile: Dockerfile
-    depends_on:
-      - db-global
-      - db-eu
-      - db-na
-      - db-sa
-      - db-af
-      - db-as
-      - db-oc
-      - db-an
-    deploy:
-      replicas: 3
     environment:
-      ConnectionStrings__Default: "Server=db-global,1433;Database=${DB_NAME};User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ASPNETCORE_URLS: "http://0.0.0.0:8080"
+      # Connection strings pr. region (brug .env-variabler)
+      ConnectionStrings__Africa:       "Server=articles-africa-db,1433;Database=${DB_NAME}_Africa;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Asia:         "Server=articles-asia-db,1433;Database=${DB_NAME}_Asia;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Europe:       "Server=articles-europe-db,1433;Database=${DB_NAME}_Europe;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__NorthAmerica: "Server=articles-northamerica-db,1433;Database=${DB_NAME}_NorthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__SouthAmerica: "Server=articles-southamerica-db,1433;Database=${DB_NAME}_SouthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Oceania:      "Server=articles-oceania-db,1433;Database=${DB_NAME}_Oceania;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=${DB_NAME}_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # Giv ogs� en 'Default' hvis din Program.cs bruger GetConnectionString("Default")
+      ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+    depends_on:
+      - articles-africa-db
+      - articles-asia-db
+      - articles-europe-db
+      - articles-northamerica-db
+      - articles-southamerica-db
+      - articles-oceania-db
+      - articles-antarctica-db
+      - articles-global-db
+    # (ingen ports her�LB eksponerer porten)
+
+  # ---------- NGINX load balancer ----------
+  lb:
+    image: nginx:alpine
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - article-service
 
 volumes:
+  mssql-africa:
+  mssql-asia:
+  mssql-europe:
+  mssql-northamerica:
+  mssql-southamerica:
+  mssql-oceania:
+  mssql-antarctica:
   mssql-global:
-  mssql-eu:
-  mssql-na:
-  mssql-sa:
-  mssql-af:
-  mssql-as:
-  mssql-oc:
-  mssql-an:
