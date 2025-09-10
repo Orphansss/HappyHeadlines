@@ -93,6 +93,8 @@ services:
     build:
       context: ./Services/ArticleService/AS_API
       dockerfile: Dockerfile
+    deploy:
+      replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       # Connection strings pr. region (brug .env-variabler)
