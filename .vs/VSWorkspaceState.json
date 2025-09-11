@@ -3,8 +3,9 @@
     "",
     "\\Services",
     "\\Services\\ArticleService",
-    "\\Services\\ArticleService\\AS_API"
+    "\\Services\\ArticleService\\AS_API",
+    "\\Services\\CommentService"
   ],
-  "SelectedNode": "\\Services\\ArticleService\\AS_API\\AS_API.sln",
+  "SelectedNode": "\\Services\\CommentService",
   "PreviewInSolutionExplorer": false
 }

@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommentService", "CommentService.csproj", "{652BEF79-B33D-466A-A38F-5DE03B71A078}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{652BEF79-B33D-466A-A38F-5DE03B71A078}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{652BEF79-B33D-466A-A38F-5DE03B71A078}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{652BEF79-B33D-466A-A38F-5DE03B71A078}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{652BEF79-B33D-466A-A38F-5DE03B71A078}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F23C2E0C-5B46-496B-BF49-6344C8C00007}
+	EndGlobalSection
+EndGlobal
