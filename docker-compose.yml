@@ -1,4 +1,6 @@
 services:
+  
+  # Article databases
   articles-europe-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
@@ -86,7 +88,18 @@ services:
       - mssql-global:/var/opt/mssql
     ports:
       - "14338:1433"   # Global
-
+  
+  #Comment Database
+  comments-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - mssql-comments:/var/opt/mssql
+    ports:
+      - "14339:1433"   # Comment
 
   # ---------- ArticleService (x-axis split via --scale) ----------
   article-service:
@@ -118,6 +131,20 @@ services:
       - articles-antarctica-db
       - articles-global-db
     # (ingen ports her�LB eksponerer porten)
+    
+  # ---------- CommentService (x-axis split via --scale) ----------
+  comment-service:
+    build:
+      context: ./Services/CommentService
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 3
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:8081"
+      # Connection strings pr. region (brug .env-variabler)
+      ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+    depends_on:
+      - comments-db
 
   # ---------- NGINX load balancer ----------
   lb:
@@ -128,6 +155,7 @@ services:
       - ./Infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - article-service
+      - comment-service
 
 volumes:
   mssql-africa:
@@ -138,3 +166,5 @@ volumes:
   mssql-oceania:
   mssql-antarctica:
   mssql-global:
+  mssql-comments:
+  
