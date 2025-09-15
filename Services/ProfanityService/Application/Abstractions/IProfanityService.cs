@@ -5,10 +5,10 @@ public interface IProfanityService
 {
     Task<Profanity> CreateProfanityTerm(Profanity profanity);
     Task<IEnumerable<Profanity>> GetProfanityTerms();
-    Task<IEnumerable<Profanity>> GetActiveProfanityTerms(bool includeInactive = false);
-    Task<Profanity?> GetProfanityTerm(int id);
+    Task<IReadOnlyList<Profanity>> GetActiveProfanityTerms();
+    Task<Profanity?> GetProfanityTermById(int id);
     Task<Profanity?> UpdateProfanityTerm(int id, Profanity profanity);
     // Soft Delete terms
-    Task<Boolean> DeactivateProfanityTerm(int id);
-    Task<Boolean> ReactivateProfanityTerm(int id);
+    Task<bool> DeactivateProfanityTerm(int id);
+    Task<bool> ReactivateProfanityTerm(int id);
 }
