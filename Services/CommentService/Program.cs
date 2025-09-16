@@ -31,7 +31,14 @@ namespace CommentService
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            
+            // Auto-migrate ved opstart 
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
+                db.Database.Migrate();
+            }
+            
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
