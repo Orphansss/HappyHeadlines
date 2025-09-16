@@ -77,17 +77,24 @@ services:
   #     - mssql-antarctica:/var/opt/mssql
   #   ports:
   #     - "14337:1433"   # Antarctica
-
+  
+  # Articles Database
   articles-global-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-global:/var/opt/mssql
     ports:
-      - "14338:1433"   # Global
+      - "14338:1433" # Global
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost,1433", "-U", "sa", "-P", "${DB_PASSWORD}", "-C", "-Q", "SELECT 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
   
   # Comment Database
   comments-db:
@@ -96,10 +103,16 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-comments:/var/opt/mssql
     ports:
-      - "14339:1433"   # Comment
+      - "14339:1433" # Comment
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost,1433", "-U", "sa", "-P", "${DB_PASSWORD}", "-C", "-Q", "SELECT 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   # ---------- ArticleService ----------
   article-service:
@@ -129,13 +142,15 @@ services:
     build:
       context: ./Services/CommentService
       dockerfile: Dockerfile
-    deploy:
-      replicas: 3
+  #  deploy:
+  #    replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
       - comments-db
+    ports:
+      - "8081:8080"
 
   # ---------- NGINX load balancer ----------
   lb:
