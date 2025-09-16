@@ -1,16 +1,49 @@
+# docker-compose.yml
+
+# Reusable snippets (anchors)
+x-healthcheck-mssql: &healthcheck_mssql
+  healthcheck:
+    test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/1433' || exit 1"]
+    interval: 10s
+    timeout: 3s
+    retries: 30
+    start_period: 30s
+
+x-healthcheck-tcp-8080: &healthcheck_tcp_8080
+  healthcheck:
+    test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080' || exit 1"]
+    interval: 10s
+    timeout: 3s
+    retries: 30
+    start_period: 20s
+
+x-healthcheck-tcp-8081: &healthcheck_tcp_8081
+  healthcheck:
+    test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8081' || exit 1"]
+    interval: 10s
+    timeout: 3s
+    retries: 30
+    start_period: 20s
+
+x-restart: &restart
+  restart: unless-stopped
+
 services:
-  
-  # Article databases
+
+  # ---------- Article databases ----------
   articles-europe-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-europe:/var/opt/mssql
     ports:
       - "14331:1433"   # Europe
+    <<: [*healthcheck_mssql, *restart]
 
   articles-asia-db:
     image: "${DB_IMAGE}"
@@ -18,10 +51,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-asia:/var/opt/mssql
     ports:
       - "14332:1433"   # Asia
+    <<: [*healthcheck_mssql, *restart]
 
   articles-africa-db:
     image: "${DB_IMAGE}"
@@ -29,10 +65,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-africa:/var/opt/mssql
     ports:
       - "14333:1433"   # Africa
+    <<: [*healthcheck_mssql, *restart]
 
   articles-northamerica-db:
     image: "${DB_IMAGE}"
@@ -40,10 +79,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-northamerica:/var/opt/mssql
     ports:
       - "14334:1433"   # North America
+    <<: [*healthcheck_mssql, *restart]
 
   articles-southamerica-db:
     image: "${DB_IMAGE}"
@@ -51,10 +93,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-southamerica:/var/opt/mssql
     ports:
       - "14335:1433"   # South America
+    <<: [*healthcheck_mssql, *restart]
 
   articles-oceania-db:
     image: "${DB_IMAGE}"
@@ -62,10 +107,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-oceania:/var/opt/mssql
     ports:
       - "14336:1433"   # Oceania
+    <<: [*healthcheck_mssql, *restart]
 
   articles-antarctica-db:
     image: "${DB_IMAGE}"
@@ -73,10 +121,13 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-antarctica:/var/opt/mssql
     ports:
       - "14337:1433"   # Antarctica
+    <<: [*healthcheck_mssql, *restart]
 
   articles-global-db:
     image: "${DB_IMAGE}"
@@ -84,44 +135,50 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-global:/var/opt/mssql
     ports:
       - "14338:1433"   # Global
-  
-  #Comment Database
+    <<: [*healthcheck_mssql, *restart]
+
+  # ---------- Comment Database ----------
   comments-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "768"
     volumes:
       - mssql-comments:/var/opt/mssql
     ports:
       - "14339:1433"   # Comment
+    <<: [*healthcheck_mssql, *restart]
 
   profanity-db:
-    image: ${DB_IMAGE}
-    platform: ${DB_PLATFORM}
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: ${DB_PASSWORD}
+      SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "768"
     volumes:
       - mssql-profanity:/var/opt/mssql
     ports:
-      - "14340:1433"              
+      - "14340:1433"   # Profanity
+    <<: [*healthcheck_mssql, *restart]
 
-  # ---------- ArticleService (x-axis split via --scale) ----------
+  # ---------- ArticleService ----------
   article-service:
     build:
       context: ./Services/ArticleService/AS_API
       dockerfile: Dockerfile
-    deploy:
-      replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
-      # Connection strings pr. region (brug .env-variabler)
       ConnectionStrings__Africa:       "Server=articles-africa-db,1433;Database=${DB_NAME}_Africa;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Asia:         "Server=articles-asia-db,1433;Database=${DB_NAME}_Asia;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Europe:       "Server=articles-europe-db,1433;Database=${DB_NAME}_Europe;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
@@ -130,36 +187,43 @@ services:
       ConnectionStrings__Oceania:      "Server=articles-oceania-db,1433;Database=${DB_NAME}_Oceania;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=${DB_NAME}_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # Giv ogs  en 'Default' hvis din Program.cs bruger GetConnectionString("Default")
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
-      - articles-africa-db
-      - articles-asia-db
-      - articles-europe-db
-      - articles-northamerica-db
-      - articles-southamerica-db
-      - articles-oceania-db
-      - articles-antarctica-db
-      - articles-global-db
-    # (ingen ports her LB eksponerer porten)
-    
-  # ---------- CommentService (x-axis split via --scale) ----------
+      articles-africa-db:
+        condition: service_healthy
+      articles-asia-db:
+        condition: service_healthy
+      articles-europe-db:
+        condition: service_healthy
+      articles-northamerica-db:
+        condition: service_healthy
+      articles-southamerica-db:
+        condition: service_healthy
+      articles-oceania-db:
+        condition: service_healthy
+      articles-antarctica-db:
+        condition: service_healthy
+      articles-global-db:
+        condition: service_healthy
+    <<: [*healthcheck_tcp_8080, *restart]
+
+  # ---------- CommentService ----------
   comment-service:
     build:
       context: ./Services/CommentService
       dockerfile: Dockerfile
-    deploy:
-      replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
-      # Connection strings pr. region (brug .env-variabler)
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
     depends_on:
-      - comments-db
+      comments-db:
+        condition: service_healthy
+      profanity-service:
+        condition: service_healthy
+    <<: [*healthcheck_tcp_8081, *restart]
 
-  # ---------- ProfanityService  ----------
-
+  # ---------- ProfanityService ----------
   profanity-service:
     build:
       context: ./Services/ProfanityService
@@ -168,10 +232,11 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       PROFANITY_DB: "Server=profanity-db,1433;Database=ProfanityDb;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
-      - profanity-db
+      profanity-db:
+        condition: service_healthy
     ports:
       - "8089:8080"
-
+    <<: [*healthcheck_tcp_8080, *restart]
 
   # ---------- NGINX load balancer ----------
   lb:
@@ -181,8 +246,11 @@ services:
     volumes:
       - ./Infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - article-service
-      - comment-service
+      article-service:
+        condition: service_started
+      comment-service:
+        condition: service_started
+    <<: [*restart]
 
 volumes:
   mssql-africa:
@@ -195,5 +263,3 @@ volumes:
   mssql-global:
   mssql-comments:
   mssql-profanity:
-
-  
