@@ -1,4 +1,4 @@
-using CommentService.Data;
+﻿using CommentService.Data;
 using CommentService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,41 +10,34 @@ namespace CommentService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddScoped<ICommentService, Services.CommentService>();
             builder.Services.AddDbContext<CommentDbContext>(o =>
                 o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-            
+
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-            
+
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "comment-service" }));
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
             app.MapGet("/", () => Results.Redirect("/swagger"));
-            
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-            
-            // Auto-migrate ved opstart 
+
+
+            app.UseAuthorization();
+
+            // Auto-migrate at startup
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
                 db.Database.Migrate();
             }
-            
-            app.UseHttpsRedirection();
 
-            app.UseAuthorization();
-            
             app.MapControllers();
-
             app.Run();
         }
     }

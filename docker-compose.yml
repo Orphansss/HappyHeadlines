@@ -143,7 +143,7 @@ services:
       context: ./Services/CommentService
       dockerfile: Dockerfile
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:8081"
+      ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
       - comments-db
