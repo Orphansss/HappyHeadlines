@@ -30,7 +30,7 @@ app.MapGet("/health", () =>
 
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
-// Auto-migrate ved opstart (du har det her i forvejen)
+// Auto-migrate ved opstart 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ProfanityDbContext>();
