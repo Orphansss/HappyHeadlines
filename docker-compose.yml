@@ -142,15 +142,13 @@ services:
     build:
       context: ./Services/CommentService
       dockerfile: Dockerfile
-  #  deploy:
-  #    replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
       - comments-db
     ports:
-      - "8081:8080"
+      - "8081:8081"
 
   # ---------- NGINX load balancer ----------
   lb:
