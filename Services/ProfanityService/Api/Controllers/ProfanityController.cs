@@ -32,7 +32,7 @@ public class ProfanityController : ControllerBase
     }
 
     // GET /api/profanity/active
-    [HttpGet("/active")]
+    [HttpGet("active")]
     public async Task<ActionResult<IReadOnlyList<Profanity>>> GetActiveProfanityTerms()
     {
         var activeProfanities = await _profanityService.GetActiveProfanityTerms();

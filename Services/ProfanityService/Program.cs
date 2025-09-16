@@ -10,7 +10,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddScoped<IProfanityService, Applications.ProfanitySerivce>();
+        builder.Services.AddScoped<IProfanityService, Applications.ProfanityService>();
         builder.Services.AddDbContext<ProfanityDbContext>(o =>
             o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
@@ -23,12 +23,10 @@ public class Program
         app.MapGet("/health", () => Results.Ok(new { ok = true, service = "profanity-service" }));
         app.MapGet("/", () => Results.Redirect("/swagger"));
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI();
+     
 
         app.UseHttpsRedirection();
 

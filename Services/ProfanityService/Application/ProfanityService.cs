@@ -4,11 +4,11 @@ using ProfanityService.Domain.Entities;
 using ProfanityService.Infrastructure.Data;
 
 namespace ProfanityService.Applications;
-public class ProfanitySerivce : IProfanityService
+public class ProfanityService : IProfanityService
 {
     private readonly ProfanityDbContext _db;
 
-    public ProfanitySerivce(ProfanityDbContext db)
+    public ProfanityService(ProfanityDbContext db)
     {
         _db = db;
     }

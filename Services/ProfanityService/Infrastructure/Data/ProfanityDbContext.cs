@@ -9,5 +9,6 @@ public class ProfanityDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Profanity>().ToTable("Profanity");
+        modelBuilder.Entity<Profanity>().HasIndex(p => p.NormalizedTerm).IsUnique();
     }
 }
