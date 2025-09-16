@@ -162,10 +162,12 @@ services:
       context: ./Services/ProfanityService
       dockerfile: Dockerfile
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:8082"
+      ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ConnectionStrings__Default: "Server=profanity-db,1433;Database=ProfanityDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
      - profanity-db
+    ports:
+      - "8082:8080"
   # ---------- NGINX load balancer ----------
   lb:
     image: nginx:alpine
@@ -188,4 +190,5 @@ volumes:
   mssql-antarctica:
   mssql-global:
   mssql-comments:
+  mssql-profanity:
 
