@@ -101,6 +101,16 @@ services:
     ports:
       - "14339:1433"   # Comment
 
+  #Profanity Database
+  profanity-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+    ports:
+      - "14340:1433"   # Profanity
+
   # ---------- ArticleService (x-axis split via --scale) ----------
   article-service:
     build:
@@ -145,7 +155,17 @@ services:
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
       - comments-db
-
+  
+  # ---------- ProfanityService ----------
+  profanity-service:
+    build:
+      context: ./Services/ProfanityService
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:8082"
+      ConnectionStrings__Default: "Server=profanity-db,1433;Database=ProfanityDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+    depends_on:
+     - profanity-db
   # ---------- NGINX load balancer ----------
   lb:
     image: nginx:alpine
@@ -156,6 +176,7 @@ services:
     depends_on:
       - article-service
       - comment-service
+      - profanity-service
 
 volumes:
   mssql-africa:
@@ -167,4 +188,4 @@ volumes:
   mssql-antarctica:
   mssql-global:
   mssql-comments:
-  
+
