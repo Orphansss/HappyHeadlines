@@ -112,7 +112,7 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
-    <<: [*healthcheck_tcp_8081, *restart]
+    <<: [*healthcheck_tcp_8080, *restart]
 
   # ---------- ProfanityService ----------
   profanity-service:

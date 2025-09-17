@@ -1,11 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\Services",
-    "\\Services\\ArticleService",
-    "\\Services\\ArticleService\\Controllers",
-    "\\Services\\ProfanityService"
+    ""
   ],
-  "SelectedNode": "\\Services\\ArticleService\\Controllers\\ArticlesController.cs",
+  "SelectedNode": "\\C:\\Users\\jan71\\Source\\Repos\\HappyHeadlines",
   "PreviewInSolutionExplorer": false
 }
