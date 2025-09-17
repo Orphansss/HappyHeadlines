@@ -3,11 +3,10 @@
 # Reusable snippets (anchors)
 x-healthcheck-mssql: &healthcheck_mssql
   healthcheck:
-    test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/1433' || exit 1"]
+    test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost,1433", "-U", "sa", "-P", "${DB_PASSWORD}", "-C", "-Q", "SELECT 1" ]
     interval: 10s
-    timeout: 3s
-    retries: 30
-    start_period: 30s
+    timeout: 5s
+    retries: 20
 
 x-healthcheck-tcp-8080: &healthcheck_tcp_8080
   healthcheck:
@@ -29,330 +28,90 @@ x-restart: &restart
   restart: unless-stopped
 
 services:
-<<<<<<< HEAD
 
-  # ---------- Article databases ----------
-  articles-europe-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-europe:/var/opt/mssql
-    ports:
-      - "14331:1433"   # Europe
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-asia-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-asia:/var/opt/mssql
-    ports:
-      - "14332:1433"   # Asia
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-africa-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-africa:/var/opt/mssql
-    ports:
-      - "14333:1433"   # Africa
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-northamerica-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-northamerica:/var/opt/mssql
-    ports:
-      - "14334:1433"   # North America
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-southamerica-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-southamerica:/var/opt/mssql
-    ports:
-      - "14335:1433"   # South America
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-oceania-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-oceania:/var/opt/mssql
-    ports:
-      - "14336:1433"   # Oceania
-    <<: [*healthcheck_mssql, *restart]
-
-  articles-antarctica-db:
-    image: "${DB_IMAGE}"
-    platform: "${DB_PLATFORM}"
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-antarctica:/var/opt/mssql
-    ports:
-      - "14337:1433"   # Antarctica
-    <<: [*healthcheck_mssql, *restart]
-=======
-  
-  # Article databases (kun Global er aktiv)
+  # ---------- Article databases (only Global active) ----------
   # articles-europe-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-europe:/var/opt/mssql
-  #   ports:
-  #     - "14331:1433"   # Europe
-
   # articles-asia-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-asia:/var/opt/mssql
-  #   ports:
-  #     - "14332:1433"   # Asia
-
   # articles-africa-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-africa:/var/opt/mssql
-  #   ports:
-  #     - "14333:1433"   # Africa
-
   # articles-northamerica-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-northamerica:/var/opt/mssql
-  #   ports:
-  #     - "14334:1433"   # North America
-
   # articles-southamerica-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-southamerica:/var/opt/mssql
-  #   ports:
-  #     - "14335:1433"   # South America
-
   # articles-oceania-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-oceania:/var/opt/mssql
-  #   ports:
-  #     - "14336:1433"   # Oceania
->>>>>>> main
-
   # articles-antarctica-db:
-  #   image: "${DB_IMAGE}"
-  #   platform: "${DB_PLATFORM}"
-  #   environment:
-  #     ACCEPT_EULA: "Y"
-  #     SA_PASSWORD: "${DB_PASSWORD}"
-  #   volumes:
-  #     - mssql-antarctica:/var/opt/mssql
-  #   ports:
-  #     - "14337:1433"   # Antarctica
-  
-  # Articles Database
+
   articles-global-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
-<<<<<<< HEAD
-      MSSQL_PID: "Developer"
-=======
->>>>>>> main
       MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-global:/var/opt/mssql
     ports:
-<<<<<<< HEAD
-      - "14338:1433"   # Global
+      - "14338:1433" # Global
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- Comment Database ----------
-=======
-      - "14338:1433" # Global
-    healthcheck:
-      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost,1433", "-U", "sa", "-P", "${DB_PASSWORD}", "-C", "-Q", "SELECT 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-  
-  # Comment Database
->>>>>>> main
   comments-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
-<<<<<<< HEAD
-      MSSQL_PID: "Developer"
-      MSSQL_MEMORY_LIMIT_MB: "768"
+      MSSQL_MEMORY_LIMIT_MB: "1024"
     volumes:
       - mssql-comments:/var/opt/mssql
     ports:
-      - "14339:1433"   # Comment
+      - "14339:1433" # Comment
     <<: [*healthcheck_mssql, *restart]
 
+  # ---------- Profanity Database ----------
   profanity-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "${DB_PASSWORD}"
-      MSSQL_PID: "Developer"
       MSSQL_MEMORY_LIMIT_MB: "768"
     volumes:
       - mssql-profanity:/var/opt/mssql
     ports:
-      - "14340:1433"   # Profanity
+      - "14340:1433" # Profanity
     <<: [*healthcheck_mssql, *restart]
 
-=======
-      MSSQL_MEMORY_LIMIT_MB: "1024"
-    volumes:
-      - mssql-comments:/var/opt/mssql
-    ports:
-      - "14339:1433" # Comment
-    healthcheck:
-      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost,1433", "-U", "sa", "-P", "${DB_PASSWORD}", "-C", "-Q", "SELECT 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
->>>>>>> main
   # ---------- ArticleService ----------
   article-service:
     build:
       context: ./Services/ArticleService/AS_API
       dockerfile: Dockerfile
+    deploy:
+      replicas: 3
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
-<<<<<<< HEAD
-      ConnectionStrings__Africa:       "Server=articles-africa-db,1433;Database=${DB_NAME}_Africa;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Asia:         "Server=articles-asia-db,1433;Database=${DB_NAME}_Asia;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Europe:       "Server=articles-europe-db,1433;Database=${DB_NAME}_Europe;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__NorthAmerica: "Server=articles-northamerica-db,1433;Database=${DB_NAME}_NorthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__SouthAmerica: "Server=articles-southamerica-db,1433;Database=${DB_NAME}_SouthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Oceania:      "Server=articles-oceania-db,1433;Database=${DB_NAME}_Oceania;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=${DB_NAME}_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=${DB_NAME}_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Global:  "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Default: "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
-      articles-africa-db:
-        condition: service_healthy
-      articles-asia-db:
-        condition: service_healthy
-      articles-europe-db:
-        condition: service_healthy
-      articles-northamerica-db:
-        condition: service_healthy
-      articles-southamerica-db:
-        condition: service_healthy
-      articles-oceania-db:
-        condition: service_healthy
-      articles-antarctica-db:
-        condition: service_healthy
       articles-global-db:
         condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
+    # (No ports here � LB exposes 8080)
 
-=======
-      # Connection strings – kun Global er aktiv
-      # ConnectionStrings__Africa:       "Server=articles-africa-db,1433;Database=ArticlesDb_Africa;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__Asia:         "Server=articles-asia-db,1433;Database=ArticlesDb_Asia;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__Europe:       "Server=articles-europe-db,1433;Database=ArticlesDb_Europe;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__NorthAmerica: "Server=articles-northamerica-db,1433;Database=ArticlesDb_NorthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__SouthAmerica: "Server=articles-southamerica-db,1433;Database=ArticlesDb_SouthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__Oceania:      "Server=articles-oceania-db,1433;Database=ArticlesDb_Oceania;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      # ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=ArticlesDb_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-    depends_on:
-      - articles-global-db
-    # (ingen ports her – LB eksponerer porten)
-  
->>>>>>> main
   # ---------- CommentService ----------
   comment-service:
     build:
       context: ./Services/CommentService
       dockerfile: Dockerfile
     environment:
-<<<<<<< HEAD
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
-=======
-      ASPNETCORE_URLS: "http://0.0.0.0:8080"
->>>>>>> main
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
     depends_on:
-<<<<<<< HEAD
       comments-db:
         condition: service_healthy
       profanity-service:
         condition: service_healthy
+    ports:
+      - "8081:8081"
     <<: [*healthcheck_tcp_8081, *restart]
 
   # ---------- ProfanityService ----------
@@ -369,11 +128,6 @@ services:
     ports:
       - "8089:8080"
     <<: [*healthcheck_tcp_8080, *restart]
-=======
-      - comments-db
-    ports:
-      - "8081:8081"
->>>>>>> main
 
   # ---------- NGINX load balancer ----------
   lb:
@@ -399,7 +153,4 @@ volumes:
   # mssql-antarctica:
   mssql-global:
   mssql-comments:
-<<<<<<< HEAD
   mssql-profanity:
-=======
->>>>>>> main
