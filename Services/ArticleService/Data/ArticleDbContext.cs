@@ -1,7 +1,7 @@
-﻿using AS_API.Models;
+﻿using ArticleService.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AS_API.Data
+namespace ArticleService.Data
 {
     public class ArticleDbContext : DbContext
     {

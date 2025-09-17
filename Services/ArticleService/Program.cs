@@ -1,7 +1,7 @@
-using AS_API.Data;
+using ArticleService.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace AS_API
+namespace ArticleService
 {
     public class Program
     {

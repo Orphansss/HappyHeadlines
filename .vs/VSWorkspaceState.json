@@ -3,9 +3,9 @@
     "",
     "\\Services",
     "\\Services\\ArticleService",
-    "\\Services\\ArticleService\\AS_API",
-    "\\Services\\CommentService"
+    "\\Services\\ArticleService\\Controllers",
+    "\\Services\\ProfanityService"
   ],
-  "SelectedNode": "\\Services\\ArticleService\\AS_API\\AS_API.sln",
+  "SelectedNode": "\\Services\\ArticleService\\Controllers\\ArticlesController.cs",
   "PreviewInSolutionExplorer": false
 }

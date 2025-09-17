@@ -82,7 +82,7 @@ services:
   # ---------- ArticleService ----------
   article-service:
     build:
-      context: ./Services/ArticleService/AS_API
+      context: ./Services/ArticleService
       dockerfile: Dockerfile
     deploy:
       replicas: 3
@@ -94,7 +94,7 @@ services:
       articles-global-db:
         condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
-    # (No ports here – LB exposes 8080)
+    # (No ports here â€“ LB exposes 8080)
 
   # ---------- CommentService ----------
   comment-service:

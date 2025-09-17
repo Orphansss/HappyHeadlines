@@ -1,4 +1,4 @@
-﻿namespace AS_API.Models
+﻿namespace ArticleService.Models
 {
     public class Article
     {

@@ -1,9 +1,9 @@
-﻿using AS_API.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AS_API.Data;
+using ArticleService.Data;
+using ArticleService.Models;
 
-namespace AS_API.Controllers
+namespace ArticleService.Controllers
 {
      [ApiController]
     [Route("api/[controller]")]
