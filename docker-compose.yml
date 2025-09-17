@@ -111,7 +111,6 @@ services:
       profanity-service:
         condition: service_healthy
     ports:
-<<<<<<< HEAD
       - "8081:8081"
     <<: [*healthcheck_tcp_8081, *restart]
 
@@ -129,9 +128,6 @@ services:
     ports:
       - "8089:8080"
     <<: [*healthcheck_tcp_8080, *restart]
-=======
-      - "8081:8080"
->>>>>>> 3adf2c548dc7b6406636d6c7a8c71672e5e90012
 
   # ---------- NGINX load balancer ----------
   lb:
