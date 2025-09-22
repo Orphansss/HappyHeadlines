@@ -18,53 +18,40 @@ namespace CommentService
             builder.Services.AddDbContext<CommentDbContext>(o =>
                 o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
             
-            // Add ProfanityService
+            // 1) Create a single, shared breaker instance
+            var sharedBreaker = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .CircuitBreakerAsync(
+                    handledEventsAllowedBeforeBreaking: 2,           
+                    durationOfBreak: TimeSpan.FromSeconds(10),
+                    onBreak: (outcome, span) =>
+                        Console.WriteLine($"[Polly] Circuit OPEN for {span}. Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}"),
+                    onReset: () => Console.WriteLine("[Polly] Circuit CLOSED."),
+                    onHalfOpen: () => Console.WriteLine("[Polly] Circuit HALF-OPEN.")
+                );
+
             builder.Services
                 .AddHttpClient<IProfanityService, ProfanityServiceHttp>(client =>
                 {
-                    // docker-compose provides: PROFANITY_BASEURL: "http://profanity-service:8080/"
                     var baseUrl = config["PROFANITY_BASEURL"]
                                   ?? throw new InvalidOperationException("PROFANITY_BASEURL not set");
                     client.BaseAddress = new Uri(baseUrl);
                     client.Timeout = TimeSpan.FromSeconds(2);
-
                 })
                 // 1) Retry (exponential backoff)
-                .AddPolicyHandler((HttpRequestMessage _) =>
-                {
-                    var delays = new[]
-                    {
-                        TimeSpan.FromMilliseconds(200),
-                        TimeSpan.FromMilliseconds(400),
-                        TimeSpan.FromMilliseconds(800)
-                    };
-                    return HttpPolicyExtensions
-                        .HandleTransientHttpError() // Network failures
-                        .WaitAndRetryAsync(
-                            delays,
-                            onRetry: (outcome, delay, attempt, ctx) =>
+                .AddPolicyHandler(_ =>
+                    HttpPolicyExtensions.HandleTransientHttpError()
+                        .WaitAndRetryAsync(new[]
                             {
-                                Console.WriteLine($"[Polly] Retry {attempt} after {delay}. " +
-                                                  $"Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}");
-                            });
-                })
-                // 2) Circuit Breaker (fail fast when dependency is unhealthy)
-                .AddPolicyHandler((HttpRequestMessage _) =>
-                {
-                    return HttpPolicyExtensions
-                        .HandleTransientHttpError()
-                        //.OrResult(r => (int)r.StatusCode == 429)   // optional
-                        .CircuitBreakerAsync(
-                            handledEventsAllowedBeforeBreaking: 5,     // trip after 5 consecutive failures
-                            durationOfBreak: TimeSpan.FromSeconds(30), // stay open for 30s
-                            onBreak: (outcome, breakDelay) =>
-                            {
-                                Console.WriteLine($"[Polly] Circuit OPEN for {breakDelay}. " +
-                                                  $"Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}");
+                                TimeSpan.FromMilliseconds(200),
+                                TimeSpan.FromMilliseconds(400),
+                                TimeSpan.FromMilliseconds(800)
                             },
-                            onReset: () => Console.WriteLine("[Polly] Circuit CLOSED."),
-                            onHalfOpen: () => Console.WriteLine("[Polly] Circuit HALF-OPEN."));
-                });
+                            onRetry: (outcome, delay, attempt, _) =>
+                                Console.WriteLine($"[Polly] Retry {attempt} after {delay}. Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}")))
+                // 2) Circuit Breaker (fail fast when dependency is unhealthy)
+                // Use the shared breaker instance
+                .AddPolicyHandler(sharedBreaker);
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
