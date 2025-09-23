@@ -112,7 +112,7 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
-    <<: [*healthcheck_tcp_8080, *restart]
+    <<: [*healthcheck_tcp_8081, *restart]
 
   # ---------- ProfanityService ----------
   profanity-service:
@@ -120,15 +120,15 @@ services:
       context: ./Services/ProfanityService
       dockerfile: Dockerfile
     environment:
-      ASPNETCORE_URLS: "http://0.0.0.0:8080"
+      ASPNETCORE_URLS: "http://0.0.0.0:8080"  
       PROFANITY_DB: "Server=profanity-db,1433;Database=ProfanityDb;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
     depends_on:
       profanity-db:
         condition: service_healthy
     ports:
-      - "8089:8080"
-    <<: [*healthcheck_tcp_8080, *restart]
-
+      - "8089:8080"                          
+    <<: [ *healthcheck_tcp_8080, *restart ]     
+  
   # ---------- NGINX load balancer ----------
   lb:
     image: nginx:alpine

@@ -1,3 +1,4 @@
+using CommentService.Exceptions;
 using CommentService.Models;
 using CommentService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,10 +17,22 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Comment>> CreateComment([FromBody] Comment comment)
+    public async Task<ActionResult<Comment>> CreateComment([FromBody] Comment comment, CancellationToken ct)
     {
-        var created = await _commentService.CreateComment(comment);
-        return CreatedAtAction(nameof(GetCommentById), new { id = created.Id }, created);
+        try
+        {
+            var created = await _commentService.CreateComment(comment, ct);
+            return CreatedAtAction(nameof(GetCommentById), new { id = created.Id }, created);
+        }
+        catch (ProfanityUnavailableException)
+        {
+            // Strict fail-fast for the assignment:
+            // Tell callers our dependency is currently down.
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                error = "ProfanityService unavailable. Please try again shortly."
+            });
+        }
     }
 
     [HttpGet]
@@ -38,17 +51,17 @@ public class CommentsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<Comment>> UpdateComment(int id, [FromBody] Comment comment)
+    public async Task<ActionResult<Comment>> UpdateComment(int id, [FromBody] Comment comment, CancellationToken ct)
     {
-        var updated = await _commentService.UpdateComment(id, comment);
+        var updated = await _commentService.UpdateComment(id, comment, ct);
         if (updated == null) return NotFound();
         return Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<ActionResult> DeleteComment(int id)
+    public async Task<ActionResult> DeleteComment(int id, CancellationToken ct)
     {
-        var deleted = await _commentService.DeleteComment(id);
+        var deleted = await _commentService.DeleteComment(id, ct);
         if (!deleted) return NotFound();
         return NoContent();
     }
