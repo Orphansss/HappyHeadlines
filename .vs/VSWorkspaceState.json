@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Services",
+    "\\Services\\ArticleService",
+    "\\Services\\ArticleService\\Controllers",
+    "\\Services\\CommentService",
+    "\\Services\\CommentService\\Controllers"
   ],
-  "SelectedNode": "\\C:\\Users\\jan71\\Source\\Repos\\HappyHeadlines",
+  "SelectedNode": "\\Services\\CommentService\\Controllers\\CommentsController.cs",
   "PreviewInSolutionExplorer": false
 }
