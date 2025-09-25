@@ -2,11 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\Services",
-    "\\Services\\ArticleService",
-    "\\Services\\ArticleService\\Controllers",
-    "\\Services\\CommentService",
-    "\\Services\\CommentService\\Controllers"
+    "\\Services\\DraftService"
   ],
-  "SelectedNode": "\\Services\\CommentService\\Controllers\\CommentsController.cs",
+  "SelectedNode": "\\Services\\DraftService\\Program.cs",
   "PreviewInSolutionExplorer": false
 }

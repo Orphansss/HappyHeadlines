@@ -17,10 +17,13 @@ namespace DraftService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateDraft([FromBody] DraftService.Models.Draft draft)
+        public async Task<IActionResult> CreateDraft([FromBody] Draft draft)
         {
-            if (draft is null || string.IsNullOrWhiteSpace(draft.Author) || string.IsNullOrWhiteSpace(draft.Content))
-                return BadRequest("Invalid draft data.");
+            if (draft == null ||
+                draft.ArticleId <= 0 ||
+                string.IsNullOrWhiteSpace(draft.Title) ||
+                string.IsNullOrWhiteSpace(draft.Body))
+                return BadRequest("ArticleId, Title and Content are required.");
 
             var created = await _draftService.CreateDraft(draft);
             return CreatedAtAction(nameof(GetDraftById), new { id = created.Id }, created);
@@ -39,11 +42,16 @@ namespace DraftService.Controllers
             => Ok(await _draftService.GetDrafts());
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<DraftService.Models.Draft>> UpdateDraft(int id, [FromBody] DraftService.Models.Draft draft)
+        public async Task<ActionResult<Draft>> UpdateDraft(int id, [FromBody] Draft draft)
         {
+            if (draft == null ||
+                draft.ArticleId <= 0 ||
+                string.IsNullOrWhiteSpace(draft.Title) ||
+                string.IsNullOrWhiteSpace(draft.Body))
+                return BadRequest("ArticleId, Title and Content are required.");
+
             var updated = await _draftService.UpdateDraft(id, draft);
-            if (updated is null) return NotFound();
-            return Ok(updated);
+            return updated is null ? NotFound() : Ok(updated);
         }
 
         [HttpDelete("{id}")]

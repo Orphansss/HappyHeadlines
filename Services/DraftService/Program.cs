@@ -11,6 +11,7 @@ namespace DraftService
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
             // Add services to the container.
             builder.Services.AddScoped<IDraftService, Services.DraftService>();
             builder.Services.AddDbContext<DraftDbContext>(o =>
@@ -21,6 +22,12 @@ namespace DraftService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<DraftService.Data.DraftDbContext>();
+                db.Database.Migrate();  // applies pending migrations automatically
+            }
 
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "draft-service" }));
             app.UseSwagger();

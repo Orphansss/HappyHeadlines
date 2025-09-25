@@ -45,8 +45,10 @@ namespace DraftService.Services
             {
                 return null;
             }
+            existingDraft.ArticleId = draft.ArticleId;
+            existingDraft.Title = draft.Title;
+            existingDraft.Body = draft.Body;
             existingDraft.Author = draft.Author;
-            existingDraft.Content = draft.Content;
             existingDraft.LastModified = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             return existingDraft;
