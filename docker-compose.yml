@@ -36,7 +36,7 @@ x-restart: &restart
   restart: unless-stopped
 
 services:
-  # ---------- Article DB (Global) ----------
+  # ---------- Article databases (only Global active) ----------
   articles-global-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
@@ -47,10 +47,10 @@ services:
     volumes:
       - mssql-global:/var/opt/mssql
     ports:
-      - "14338:1433"
+      - "14338:1433"   # Global
     <<: [*healthcheck_mssql, *restart]
 
-  # ---------- Comment DB ----------
+  # ---------- Comment Database ----------
   comments-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
@@ -61,10 +61,10 @@ services:
     volumes:
       - mssql-comments:/var/opt/mssql
     ports:
-      - "14339:1433"
+      - "14339:1433"   # Comment
     <<: [*healthcheck_mssql, *restart]
 
-  # ---------- Profanity DB ----------
+  # ---------- Profanity Database ----------
   profanity-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
@@ -75,10 +75,10 @@ services:
     volumes:
       - mssql-profanity:/var/opt/mssql
     ports:
-      - "14340:1433"
+      - "14340:1433"   # Profanity
     <<: [*healthcheck_mssql, *restart]
 
-  # ---------- Draft DB ----------
+  # ---------- Draft Database ----------
   draft-db:
     image: "${DB_IMAGE}"
     platform: "${DB_PLATFORM}"
@@ -89,7 +89,7 @@ services:
     volumes:
       - mssql-draft:/var/opt/mssql
     ports:
-      - "14341:1433"
+      - "14341:1433"   # Draft
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- ArticleService ----------
@@ -97,14 +97,18 @@ services:
     build:
       context: ./Services/ArticleService
       dockerfile: Dockerfile
+    deploy:
+      replicas: 3                 # note: ignored by Compose; use --scale if needed
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
-      ConnectionStrings__Global: "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Global:  "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Default: "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      Seq__Url: "http://seq:5341"
     depends_on:
       articles-global-db:
         condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
+    # (No ports here – exposed via lb:8080)
 
   # ---------- CommentService ----------
   comment-service:
@@ -115,6 +119,7 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
+      Seq__Url: "http://seq:5341"
     depends_on:
       comments-db:
         condition: service_healthy
@@ -130,18 +135,13 @@ services:
       context: ./Services/ProfanityService
       dockerfile: Dockerfile
     environment:
-<<<<<<< HEAD
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       PROFANITY_DB: "Server=profanity-db,1433;Database=ProfanityDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-=======
-      ASPNETCORE_URLS: "http://0.0.0.0:8080"  
-      PROFANITY_DB: "Server=profanity-db,1433;Database=ProfanityDb;User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
->>>>>>> main
+      Seq__Url: "http://seq:5341"
     depends_on:
       profanity-db:
         condition: service_healthy
     ports:
-<<<<<<< HEAD
       - "8089:8080"
     <<: [*healthcheck_tcp_8080, *restart]
 
@@ -153,6 +153,7 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8090"
       ConnectionStrings__Default: "Server=draft-db,1433;Database=DraftDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      Seq__Url: "http://seq:5341"
     depends_on:
       draft-db:
         condition: service_healthy
@@ -160,11 +161,6 @@ services:
       - "8090:8090"
     <<: [*healthcheck_tcp_8090, *restart]
 
-=======
-      - "8089:8080"                          
-    <<: [ *healthcheck_tcp_8080, *restart ]     
-  
->>>>>>> main
   # ---------- NGINX load balancer ----------
   lb:
     image: nginx:alpine
@@ -179,8 +175,20 @@ services:
         condition: service_started
     <<: [*restart]
 
+  # ---------- Central Logging ----------
+  seq:
+    image: datalust/seq:2024
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "8085:80"     # Seq UI
+      - "5341:5341"   # ingestion
+    volumes:
+      - seq-data:/data
+
 volumes:
   mssql-global:
   mssql-comments:
   mssql-profanity:
   mssql-draft:
+  seq-data:

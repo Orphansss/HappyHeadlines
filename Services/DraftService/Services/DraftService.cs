@@ -1,7 +1,8 @@
-﻿using DraftService.Interfaces;
+﻿using DraftService.Data;
+using DraftService.Interfaces;
 using DraftService.Models;
-using DraftService.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 
 namespace DraftService.Services
@@ -18,8 +19,12 @@ namespace DraftService.Services
 
         public async Task<Draft> CreateDraft(Draft draft)
         {
+            Log.Information("Creating draft for ArticleId {ArticleId} by {Author}", draft.ArticleId, draft.Author);
+
             _db.Drafts.Add(draft);
             await _db.SaveChangesAsync();
+
+            Log.Information("Draft created with Id {DraftId}", draft.Id); 
             return draft;
         }
 

@@ -1,5 +1,6 @@
 using ArticleService.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace ArticleService
 {
@@ -7,7 +8,25 @@ namespace ArticleService
     {
         public static void Main(string[] args)
         {
+            // ----- Serilog setup (central logging to Seq) -----
+            var serviceName = "ArticleService";
+
             var builder = WebApplication.CreateBuilder(args);
+
+            // create Serilog logger early
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("service", serviceName)
+                .Enrich.WithEnvironmentName()                               // adds Environment property
+                .WriteTo.Console()
+                .WriteTo.Seq(builder.Configuration["Seq:Url"]                // from Seq__Url env
+                             ?? "http://localhost:5341")                     // fallback when running outside compose
+                .CreateLogger();
+
+            builder.Host.UseSerilog(); // plug Serilog into ASP.NET
+
+            
 
             // Gør HttpContext tilgængelig (til at læse X-Region / ?region=)
             builder.Services.AddHttpContextAccessor();

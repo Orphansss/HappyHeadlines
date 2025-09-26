@@ -1,9 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\Services",
-    "\\Services\\DraftService"
+    ""
   ],
-  "SelectedNode": "\\Services\\DraftService\\Program.cs",
+  "SelectedNode": "\\DraftService.sln",
   "PreviewInSolutionExplorer": false
 }
