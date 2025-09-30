@@ -4,32 +4,35 @@ using PublisherService.Infrastructure.Profanity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Options
-builder.Services.Configure<MessagingOptions>(builder.Configuration.GetSection(MessagingOptions.SectionName));
+// ---- Configure options ----
+builder.Services.Configure<MessagingOptions>(
+    builder.Configuration.GetSection(MessagingOptions.SectionName));
 
-// Profanity HTTP client
+// ---- Profanity HTTP client ----
 builder.Services
     .AddHttpClient<IProfanityClient, ProfanityClientHttp>(client =>
     {
         var baseUrl = builder.Configuration["PROFANITY_BASEURL"]
                       ?? throw new InvalidOperationException("PROFANITY_BASEURL not set");
+
         client.BaseAddress = new Uri(baseUrl);
         client.Timeout = TimeSpan.FromSeconds(2);
     });
 
-// Rabbit publisher
+// ---- RabbitMQ publisher ----
 builder.Services.AddSingleton<IArticleQueuePublisher, ArticleQueuePublisherRabbit>();
 
-// Controllers + Swagger
+// ---- Controllers + Swagger ----
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ---- Middleware pipeline ----
 if (app.Environment.IsDevelopment())
 {
+    // Swagger JSON + UI available at /swagger
     app.UseSwagger();
     app.UseSwaggerUI();
 }
