@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace PublisherService.Application.Abstractions;
 
 public interface IProfanityClient

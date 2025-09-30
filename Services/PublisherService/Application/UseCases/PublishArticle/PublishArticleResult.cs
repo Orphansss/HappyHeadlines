@@ -1,3 +1,5 @@
+using System;
+
 namespace PublisherService.Application.UseCases.PublishArticle;
 
 // The output model for the use case

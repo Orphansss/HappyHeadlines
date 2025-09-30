@@ -1,3 +1,5 @@
+using System;
+
 namespace PublisherService.Application.Common;
 
 /// <summary>
