@@ -4,9 +4,9 @@ namespace PublisherService.Domain;
 
 internal static class Guard
 {
-    public static void NotEmpty(Guid value, string name)
+    public static void Positive(int value, string name)
     {
-        if (value == Guid.Empty) throw new DomainValidationException($"{name} cannot be empty.");
+        if (value <= 0) throw new DomainValidationException($"{name} must be > 0.");
     }
 
     public static void NotNullOrWhiteSpace(string? value, string name)
