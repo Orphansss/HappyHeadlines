@@ -38,7 +38,7 @@ public sealed class PublishArticleHandler
         await _publisher.PublishAsync(article, cmd.IdempotencyKey, ct);
 
         // 4) Ack
-        Console.WriteLine($"Published article: {article}.");
+        Console.WriteLine("Published article: " + System.Text.Json.JsonSerializer.Serialize(article));
         return new PublishArticleResult(PublicationId: article.Id, AcceptedAt: DateTimeOffset.UtcNow);
     }
 }
