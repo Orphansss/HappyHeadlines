@@ -33,13 +33,13 @@ x-healthcheck-tcp-8090: &healthcheck_tcp_8090
     start_period: 20s
     
   # ---------- Reusable healthcheck for RabbitMQ ----------
-  x-healthcheck-rabbit: &healthcheck_rabbit
-    healthcheck:
-      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+x-healthcheck-rabbit: &healthcheck_rabbit
+  healthcheck:
+    test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 10s
       
   # ---------- Reusable healthcheck for PublisherService ----------
 x-healthcheck-tcp-8082: &healthcheck_tcp_8082
