@@ -1,10 +1,6 @@
-using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using PublisherService.Application.Abstractions;
 using PublisherService.Application.Common;
+using PublisherService.Infrastructure.Profanity.Dtos;
 
 namespace PublisherService.Infrastructure.Profanity;
 
