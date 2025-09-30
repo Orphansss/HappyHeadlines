@@ -1,6 +1,7 @@
 using PublisherService.Application.Abstractions;
 using PublisherService.Infrastructure.Messaging;
 using PublisherService.Infrastructure.Profanity;
+using PublisherService.Application.UseCases.PublishArticle;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ builder.Services
 
 // ---- RabbitMQ publisher ----
 builder.Services.AddSingleton<IArticleQueuePublisher, ArticleQueuePublisherRabbit>();
+
+builder.Services.AddScoped<PublishArticleHandler>();
 
 // ---- Controllers + Swagger ----
 builder.Services.AddControllers();
