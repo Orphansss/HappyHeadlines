@@ -4,7 +4,7 @@ namespace PublisherService.Api.Dtos;
 /// Response when an article is accepted for publication.
 /// </summary>
 public sealed record PublishResponseDto(
-    Guid PublicationId,
+    int PublicationId,
     DateTimeOffset AcceptedAt,
     string Status = "Queued"
 );

@@ -4,7 +4,7 @@ namespace PublisherService.Api.Dtos;
 /// Input payload for publishing an article.
 /// </summary>
 public sealed record PublishRequestDto(
-    Guid AuthorId,
+    int AuthorId,
     string Title,
     string? Summary,
     string Content
