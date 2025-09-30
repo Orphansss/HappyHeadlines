@@ -24,6 +24,7 @@ builder.Services
 builder.Services.AddSingleton<IArticleQueuePublisher, ArticleQueuePublisherRabbit>();
 
 builder.Services.AddScoped<PublishArticleHandler>();
+builder.Services.AddSingleton<IIdGenerator, MonotonicIdGenerator>();
 
 // ---- Controllers + Swagger ----
 builder.Services.AddControllers();
