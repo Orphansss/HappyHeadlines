@@ -3,6 +3,7 @@ using DraftService.Data;
 using DraftService.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Monitoring;
 
 namespace DraftService
 {
@@ -10,24 +11,13 @@ namespace DraftService
     {
         public static void Main(string[] args)
         {
-            // ----- Serilog setup (central logging to Seq) -----
-            var serviceName = "DraftService";
+          
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // create Serilog logger early
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty("service", serviceName)
-                .Enrich.WithEnvironmentName()                               // adds Environment property
-                .WriteTo.Console()
-                .WriteTo.Seq(builder.Configuration["Seq:Url"]                // from Seq__Url env
-                             ?? "http://localhost:5341")                     // fallback when running outside compose
-                .CreateLogger();
+            builder.AddMonitoring("DraftService"); // adding SeriLog now through or Monitoring class
 
-            builder.Host.UseSerilog(); // plug Serilog into ASP.NET
-
+      
 
             // Add services to the container.
             builder.Services.AddScoped<IDraftService, Services.DraftService>();
@@ -59,6 +49,9 @@ namespace DraftService
             }
 
             app.MapControllers();
+            // add traceId into all logs + nice request logging
+            app.UseTraceIdEnricher();
+            app.UseSerilogRequestLogging();
 
 
             app.Run();

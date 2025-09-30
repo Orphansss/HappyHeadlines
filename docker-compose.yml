@@ -47,7 +47,7 @@ services:
     volumes:
       - mssql-global:/var/opt/mssql
     ports:
-      - "14338:1433"   # Global
+      - "14338:1433"
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- Comment Database ----------
@@ -61,7 +61,7 @@ services:
     volumes:
       - mssql-comments:/var/opt/mssql
     ports:
-      - "14339:1433"   # Comment
+      - "14339:1433"
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- Profanity Database ----------
@@ -75,7 +75,7 @@ services:
     volumes:
       - mssql-profanity:/var/opt/mssql
     ports:
-      - "14340:1433"   # Profanity
+      - "14340:1433"
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- Draft Database ----------
@@ -89,21 +89,22 @@ services:
     volumes:
       - mssql-draft:/var/opt/mssql
     ports:
-      - "14341:1433"   # Draft
+      - "14341:1433"
     <<: [*healthcheck_mssql, *restart]
 
   # ---------- ArticleService ----------
   article-service:
     build:
-      context: ./Services/ArticleService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/ArticleService/Dockerfile
     deploy:
-      replicas: 3                 # note: ignored by Compose; use --scale if needed
+      replicas: 3   # note: ignored by compose; use --scale if needed
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       ConnectionStrings__Global:  "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Default: "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
     depends_on:
       articles-global-db:
         condition: service_healthy
@@ -113,13 +114,14 @@ services:
   # ---------- CommentService ----------
   comment-service:
     build:
-      context: ./Services/CommentService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/CommentService/Dockerfile
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
       Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
     depends_on:
       comments-db:
         condition: service_healthy
@@ -132,12 +134,13 @@ services:
   # ---------- ProfanityService ----------
   profanity-service:
     build:
-      context: ./Services/ProfanityService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/ProfanityService/Dockerfile
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
       PROFANITY_DB: "Server=profanity-db,1433;Database=ProfanityDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
     depends_on:
       profanity-db:
         condition: service_healthy
@@ -148,12 +151,13 @@ services:
   # ---------- DraftService ----------
   draft-service:
     build:
-      context: ./Services/DraftService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/DraftService/Dockerfile
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8090"
       ConnectionStrings__Default: "Server=draft-db,1433;Database=DraftDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
     depends_on:
       draft-db:
         condition: service_healthy
@@ -185,6 +189,15 @@ services:
       - "5341:5341"   # ingestion
     volumes:
       - seq-data:/data
+    <<: [*restart]
+
+  # ---------- Jaeger (tracing) ----------
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+    <<: [*restart]
 
 volumes:
   mssql-global:

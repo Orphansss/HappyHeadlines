@@ -3,6 +3,66 @@
   "WorkspaceRootPath": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\ProfanityService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ProfanityService\\ProfanityService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\ArticleService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ArticleService\\ArticleService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\CommentService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\CommentService\\CommentService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\DraftService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\DraftService\\DraftService.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\DraftService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ProfanityService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\CommentService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ArticleService\\Dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\Monitoring.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Infrastructure\\Monitoring\\Monitoring.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\MonitorService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Infrastructure\\Monitoring\\MonitorService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\Monitoring.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\Monitoring\\Monitoring.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\MonitorService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\Monitoring\\MonitorService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ProfanityService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\CommentService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\DraftService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\ArticleService\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -14,7 +74,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 256,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 18,
           "Children": [
             {
               "$type": "Bookmark",
@@ -54,20 +114,200 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Dockerfile",
+              "RelativeDocumentMoniker": "Services\\ProfanityService\\Dockerfile",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Dockerfile",
+              "RelativeToolTip": "Services\\ProfanityService\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-30T15:26:31.467Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Dockerfile",
+              "RelativeDocumentMoniker": "Services\\DraftService\\Dockerfile",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Dockerfile",
+              "RelativeToolTip": "Services\\DraftService\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-30T15:26:23.816Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Dockerfile",
+              "RelativeDocumentMoniker": "Services\\CommentService\\Dockerfile",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Dockerfile",
+              "RelativeToolTip": "Services\\CommentService\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-30T15:26:10.139Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Dockerfile",
+              "RelativeDocumentMoniker": "Services\\ArticleService\\Dockerfile",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Dockerfile",
+              "RelativeToolTip": "Services\\ArticleService\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-09-30T15:24:49.262Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ArticleService.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\ArticleService.csproj",
+              "RelativeDocumentMoniker": "Services\\ArticleService\\ArticleService.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\ArticleService.csproj",
+              "RelativeToolTip": "Services\\ArticleService\\ArticleService.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-30T15:24:38.735Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Monitoring.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\Monitoring.csproj",
+              "RelativeDocumentMoniker": "Infrastructure\\Monitoring\\Monitoring.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\Monitoring.csproj",
+              "RelativeToolTip": "Infrastructure\\Monitoring\\Monitoring.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-30T15:20:38.46Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "MonitorService.cs",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\MonitorService.cs",
+              "RelativeDocumentMoniker": "Infrastructure\\Monitoring\\MonitorService.cs",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Infrastructure\\Monitoring\\MonitorService.cs",
+              "RelativeToolTip": "Infrastructure\\Monitoring\\MonitorService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-30T15:20:35.823Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CommentService.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\CommentService.csproj",
+              "RelativeDocumentMoniker": "Services\\CommentService\\CommentService.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\CommentService.csproj",
+              "RelativeToolTip": "Services\\CommentService\\CommentService.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-30T09:14:31.37Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DraftService.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\DraftService.csproj",
+              "RelativeDocumentMoniker": "Services\\DraftService\\DraftService.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\DraftService.csproj",
+              "RelativeToolTip": "Services\\DraftService\\DraftService.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-30T09:06:30.317Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ProfanityService.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\ProfanityService.csproj",
+              "RelativeDocumentMoniker": "Services\\ProfanityService\\ProfanityService.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\ProfanityService.csproj",
+              "RelativeToolTip": "Services\\ProfanityService\\ProfanityService.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-30T09:05:00.489Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Program.cs",
+              "RelativeDocumentMoniker": "Services\\DraftService\\Program.cs",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\DraftService\\Program.cs",
+              "RelativeToolTip": "Services\\DraftService\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEMAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T18:02:16.14Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Program.cs",
+              "RelativeDocumentMoniker": "Services\\CommentService\\Program.cs",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\CommentService\\Program.cs",
+              "RelativeToolTip": "Services\\CommentService\\Program.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T18:01:10.128Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Program.cs",
+              "RelativeDocumentMoniker": "Services\\ProfanityService\\Program.cs",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ProfanityService\\Program.cs",
+              "RelativeToolTip": "Services\\ProfanityService\\Program.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAEUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T17:59:02.885Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Monitoring.csproj",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\Monitoring.csproj",
+              "RelativeDocumentMoniker": "Services\\Monitoring\\Monitoring.csproj",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\Monitoring.csproj",
+              "RelativeToolTip": "Services\\Monitoring\\Monitoring.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-09-29T16:53:33.716Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "MonitorService.cs",
+              "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\MonitorService.cs",
+              "RelativeDocumentMoniker": "Services\\Monitoring\\MonitorService.cs",
+              "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\Monitoring\\MonitorService.cs",
+              "RelativeToolTip": "Services\\Monitoring\\MonitorService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-29T16:52:56.599Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Program.cs",
               "RelativeDocumentMoniker": "Services\\ArticleService\\Program.cs",
               "ToolTip": "C:\\Users\\carol\\source\\repos\\HappyHeadlines\\Services\\ArticleService\\Program.cs",
               "RelativeToolTip": "Services\\ArticleService\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-04T10:26:29.642Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "WhenOpened": "2025-09-04T10:26:29.642Z"
             }
           ]
         }

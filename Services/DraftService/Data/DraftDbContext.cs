@@ -11,6 +11,8 @@ namespace DraftService.Data
 
         public DbSet<Draft> Drafts => Set<Draft>();
 
+        
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -27,7 +29,7 @@ namespace DraftService.Data
             modelBuilder.Entity<Draft>().HasIndex(d => d.ArticleId);       // fast lookup by article
             modelBuilder.Entity<Draft>().Property(d => d.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             modelBuilder.Entity<Draft>().Property(d => d.LastModified).HasDefaultValueSql("GETUTCDATE()");
-        }
+        } 
     }
 
     

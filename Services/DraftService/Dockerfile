@@ -1,27 +1,33 @@
 # syntax=docker/dockerfile:1
 
+# ----- runtime base -----
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8090
 
+# ----- build stage -----
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# copy only the csproj first (speeds up restore)
-COPY ["DraftService.csproj", "."]
-RUN dotnet restore "DraftService.csproj"
+# Copy project files first (restore cache)
+COPY Services/DraftService/DraftService.csproj Services/DraftService/
+COPY Infrastructure/Monitoring/Monitoring.csproj       Infrastructure/Monitoring/
+RUN dotnet restore Services/DraftService/DraftService.csproj
 
-# now copy the rest of the source
+# Copy the rest of the source
 COPY . .
-RUN dotnet build "DraftService.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
+WORKDIR /src/Services/DraftService
+RUN dotnet build DraftService.csproj -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
+# ----- publish stage -----
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "DraftService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false --no-restore
+WORKDIR /src/Services/DraftService
+RUN dotnet publish DraftService.csproj -c $BUILD_CONFIGURATION -o /app/publish --no-restore /p:UseAppHost=false
 
-FROM base AS final
+# ----- final runtime image -----
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "DraftService.dll"]

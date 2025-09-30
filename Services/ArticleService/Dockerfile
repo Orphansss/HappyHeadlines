@@ -1,26 +1,30 @@
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# syntax=docker/dockerfile:1
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
 WORKDIR /app
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 EXPOSE 8080
 
-# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ArticleService.csproj", "."]
-RUN dotnet restore "./ArticleService.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./ArticleService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# ---- restore layer: copy csproj with correct paths ----
+COPY Services/ArticleService/ArticleService.csproj Services/ArticleService/
+COPY Infrastructure/Monitoring/Monitoring.csproj       Infrastructure/Monitoring/
+RUN dotnet restore Services/ArticleService/ArticleService.csproj
+
+# ---- copy the rest ----
+COPY . .
+WORKDIR /src/Services/ArticleService
+RUN dotnet build ArticleService.csproj -c $BUILD_CONFIGURATION -o /app/build --no-restore
+
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./ArticleService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+WORKDIR /src/Services/ArticleService
+RUN dotnet publish ArticleService.csproj -c $BUILD_CONFIGURATION -o /app/publish --no-restore /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ArticleService.dll"]
+ENTRYPOINT ["dotnet","ArticleService.dll"]

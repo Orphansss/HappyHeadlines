@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
 using Serilog;
+using Monitoring;
 
 namespace CommentService
 {
@@ -12,23 +13,15 @@ namespace CommentService
     {
         public static void Main(string[] args)
         {
-            // ----- Serilog setup (central logging to Seq) -----
-            var serviceName = "CommentService";
+           
+          
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // create Serilog logger early
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty("service", serviceName)
-                .Enrich.WithEnvironmentName()                               // adds Environment property
-                .WriteTo.Console()
-                .WriteTo.Seq(builder.Configuration["Seq:Url"]                // from Seq__Url env
-                             ?? "http://localhost:5341")                     // fallback when running outside compose
-                .CreateLogger();
 
-            builder.Host.UseSerilog(); // plug Serilog into ASP.NET
+            builder.AddMonitoring("CommentService"); // adding SeriLog now through or Monitoring class
+
+          
 
             var config = builder.Configuration;
             
@@ -94,6 +87,11 @@ namespace CommentService
             }
 
             app.MapControllers();
+
+            // add traceId into all logs + nice request logging
+            app.UseTraceIdEnricher();
+            app.UseSerilogRequestLogging();
+
             app.Run();
         }
     }
