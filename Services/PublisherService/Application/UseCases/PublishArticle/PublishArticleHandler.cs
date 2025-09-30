@@ -1,5 +1,4 @@
 using PublisherService.Application.Abstractions;
-using PublisherService.Application.Common;
 using PublisherService.Domain.Entities;
 
 namespace PublisherService.Application.UseCases.PublishArticle;
@@ -9,43 +8,37 @@ public sealed class PublishArticleHandler
 {
     private readonly IProfanityClient _profanity;
     private readonly IArticleQueuePublisher _publisher;
+    private readonly IIdGenerator _ids;
 
-    public PublishArticleHandler(IProfanityClient profanity, IArticleQueuePublisher publisher)
+    public PublishArticleHandler(IProfanityClient profanity, IArticleQueuePublisher publisher, IIdGenerator ids)
     {
         _profanity = profanity;
         _publisher = publisher;
+        _ids = ids;
     }
 
     public async Task<PublishArticleResult> HandleAsync(PublishArticleCommand cmd, CancellationToken ct = default)
     {
-        // 1) Filter profanity in *all* user-facing fields
-        string cleanedTitle, cleanedSummary, cleanedContent;
+        // 1) Filter text
+        var cleanedTitle   = await _profanity.FilterAsync(cmd.Title, ct);
+        var cleanedSummary = cmd.Summary is null ? null : await _profanity.FilterAsync(cmd.Summary, ct);
+        var cleanedContent = await _profanity.FilterAsync(cmd.Content, ct);
 
-        try
-        {
-            cleanedTitle   = await _profanity.FilterAsync(cmd.Title,   ct);
-            cleanedSummary = cmd.Summary is null ? string.Empty : await _profanity.FilterAsync(cmd.Summary, ct);
-            cleanedContent = await _profanity.FilterAsync(cmd.Content, ct);
-        }
-        catch (TaskCanceledException ex)       { throw new ProfanityUnavailableException(inner: ex); }
-        catch (HttpRequestException ex)        { throw new ProfanityUnavailableException(inner: ex); }
-        catch (Exception ex) when (ex.GetType().Name.Contains("BrokenCircuit", StringComparison.OrdinalIgnoreCase))
-        { throw new ProfanityUnavailableException(inner: ex); }
-
-        // 2) Build a valid, published Article (entity)
-        var publicationId = Guid.NewGuid();
+        // 2) Create domain entity with generated int ID
+        var publicationId = _ids.NextId();
         var article = Article.CreatePublished(
             id: publicationId,
             authorId: cmd.AuthorId,
             title: cleanedTitle,
-            summary: string.IsNullOrWhiteSpace(cleanedSummary) ? null : cleanedSummary,
+            summary: cleanedSummary,
             cleanedContent: cleanedContent
         );
 
-        // 3) Publish to the queue (hand off to Infrastructure)
+        // 3) Publish to queue
         await _publisher.PublishAsync(article, cmd.IdempotencyKey, ct);
 
-        // 4) Return an ack to the caller
+        // 4) Ack
+        Console.WriteLine($"Published article: {article}.");
         return new PublishArticleResult(PublicationId: article.Id, AcceptedAt: DateTimeOffset.UtcNow);
     }
 }
