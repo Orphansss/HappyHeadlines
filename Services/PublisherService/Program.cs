@@ -34,7 +34,7 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // ---- Middleware pipeline ----
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
 {
     // Swagger JSON + UI available at /swagger
     app.UseSwagger();
