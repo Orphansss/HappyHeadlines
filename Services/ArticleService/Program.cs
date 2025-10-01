@@ -1,8 +1,8 @@
-using ArticleService.Data;
+using ArticleService.Application.Interfaces;
+using ArticleService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
-
 
 namespace ArticleService
 {
@@ -10,37 +10,35 @@ namespace ArticleService
     {
         public static void Main(string[] args)
         {
-           
-
             var builder = WebApplication.CreateBuilder(args);
 
             builder.AddMonitoring("ArticleService"); // adding SeriLog now through or Monitoring class
-
-      
-
-
 
             // Gør HttpContext tilgængelig (til at læse X-Region / ?region=)
             builder.Services.AddHttpContextAccessor();
 
             // Registrér vores RegionResolver (finder den rigtige connection pr. request)
             builder.Services.AddScoped<IRegionResolver, RegionResolver>();
+            // Application services
+            builder.Services.AddScoped<IArticleService, Application.Services.ArticleService>();
+
 
             // Konfigurér DbContext med connection string valgt ved runtime (per request)
             builder.Services.AddDbContext<ArticleDbContext>((sp, o) =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>();
-                var resolver = sp.GetRequiredService<IRegionResolver>();
-                var conn = resolver.ResolveConnection(cfg); // <- vælg pr. request
-                o.UseSqlServer(conn, sql => sql.EnableRetryOnFailure());
+                var def = cfg.GetConnectionString("Default");
+                var cs = string.IsNullOrWhiteSpace(def)
+                    ? sp.GetRequiredService<IRegionResolver>().ResolveConnection(cfg)
+                    : def;
+
+                o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure());
             });
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
-
-
+            
             var app = builder.Build();
 
             // Kør migrationer for ALLE connection strings ved opstart (en gang)

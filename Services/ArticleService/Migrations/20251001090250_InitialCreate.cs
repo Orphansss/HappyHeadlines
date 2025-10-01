@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AS_API.Migrations
+namespace ArticleService.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,14 +17,26 @@ namespace AS_API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Body = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AuthorId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Summary = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PublishedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Articles", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Articles_AuthorId",
+                table: "Articles",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Articles_PublishedAt",
+                table: "Articles",
+                column: "PublishedAt");
         }
 
         /// <inheritdoc />

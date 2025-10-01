@@ -31,5 +31,23 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Infrastructure\Monitoring\Monitoring.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\appsettings.Development.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\appsettings.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.deps.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.runtimeconfig.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.staticwebassets.endpoints.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\AS_API.csproj.nuget.dgspec.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\AS_API.sourcelink.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\staticwebassets.build.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\project.assets.json" />
+	  <_ContentIncludedByDefault Remove="AS_API\obj\project.packagespec.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Api\" />
+	</ItemGroup>
 	
 </Project>
