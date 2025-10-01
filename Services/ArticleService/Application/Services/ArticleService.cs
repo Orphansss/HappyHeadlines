@@ -2,6 +2,7 @@ using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
 using ArticleService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace ArticleService.Application.Services;
 
@@ -9,6 +10,7 @@ public sealed class ArticleService(ArticleDbContext db) : IArticleService
 {
     public async Task<Article> CreateAsync(Article input, CancellationToken ct = default)
     {
+        
         if (string.IsNullOrWhiteSpace(input.Title))
             throw new ArgumentException("Title is required.", nameof(input.Title));
 
@@ -19,8 +21,13 @@ public sealed class ArticleService(ArticleDbContext db) : IArticleService
         if (input.PublishedAt == default)
             input.PublishedAt = DateTimeOffset.UtcNow;
 
+        Log.Information("Creating Article with ArticleId: {ArticleId}, AuthorId: {AuthorId}, Title: {Title}",input.Id, input.AuthorId, input.Title);
+
         db.Articles.Add(input);
         await db.SaveChangesAsync(ct);
+        
+        Log.Information("Article created with ArticleId: {ArticleId}", input.Id);
+
         return input;
     }
 
