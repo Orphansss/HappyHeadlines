@@ -61,7 +61,7 @@ namespace CommentService.Services
             if (existing == null) return null;
 
             existing.Content = comment.Content;
-            existing.Author  = comment.Author;
+            existing.AuthorId  = comment.AuthorId;
             await _db.SaveChangesAsync(ct);
             return existing;
         }

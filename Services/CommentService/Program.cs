@@ -13,15 +13,9 @@ namespace CommentService
     {
         public static void Main(string[] args)
         {
-           
-          
-
             var builder = WebApplication.CreateBuilder(args);
-
-
+            
             builder.AddMonitoring("CommentService"); // adding SeriLog now through or Monitoring class
-
-          
 
             var config = builder.Configuration;
             

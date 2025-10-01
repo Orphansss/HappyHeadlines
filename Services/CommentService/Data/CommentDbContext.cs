@@ -11,8 +11,16 @@ public class CommentDbContext : DbContext
     
     public DbSet<Comment> Comments => Set<Comment>();
     
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder b)
     {
-        modelBuilder.Entity<Comment>().ToTable("Comments"); 
+        b.Entity<Comment>(e =>
+        {
+            e.ToTable("Comments");               
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Content).IsRequired().HasMaxLength(500);
+            e.Property(x => x.PublishedAt).IsRequired();
+            e.HasIndex(x => x.PublishedAt);
+            e.HasIndex(x => x.AuthorId);
+        });
     }
 }
