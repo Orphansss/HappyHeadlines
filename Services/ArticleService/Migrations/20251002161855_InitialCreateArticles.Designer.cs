@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArticleService.Migrations
 {
     [DbContext(typeof(ArticleDbContext))]
-    [Migration("20251001090250_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251002161855_InitialCreateArticles")]
+    partial class InitialCreateArticles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,10 +28,7 @@ namespace ArticleService.Migrations
             modelBuilder.Entity("ArticleService.Domain.Entities.Article", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
