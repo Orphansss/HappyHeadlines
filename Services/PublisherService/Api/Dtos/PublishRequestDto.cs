@@ -10,5 +10,5 @@ public sealed record PublishRequestDto(
     string Title,
     string? Summary,
     string Content,
-    Region Region
+    string Region
 );

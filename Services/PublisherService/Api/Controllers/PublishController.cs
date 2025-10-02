@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PublisherService.Api.Dtos;
 using PublisherService.Application.Common;
 using PublisherService.Application.UseCases.PublishArticle;
+using PublisherService.Domain.Entities;
 
 namespace PublisherService.Api.Controllers;
 
@@ -32,12 +33,16 @@ public sealed class PublishController : ControllerBase
 
         try
         {
+            // Validate and map string to enum
+            if (!Enum.TryParse<Region>(request.Region, ignoreCase: true, out var region))
+                return BadRequest(new { error = $"Unknown region '{request.Region}'. Allowed: {string.Join(", ", Enum.GetNames(typeof(Region)))}" });
+
             var cmd = new PublishArticleCommand(
                 AuthorId: request.AuthorId,
                 Title: request.Title,
                 Summary: request.Summary,
                 Content: request.Content,
-                Region: request.Region,
+                region,
                 IdempotencyKey: idempotencyKey
             );
 

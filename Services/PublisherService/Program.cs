@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using PublisherService.Application.Abstractions;
 using PublisherService.Infrastructure.Messaging;
 using PublisherService.Infrastructure.Profanity;
@@ -27,7 +28,11 @@ builder.Services.AddScoped<PublishArticleHandler>();
 builder.Services.AddSingleton<IIdGenerator, MonotonicIdGenerator>();
 
 // ---- Controllers + Swagger ----
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {   // Serialize/deserialize enums as strings. Case-insensitive by default
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
