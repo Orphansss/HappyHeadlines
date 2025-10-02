@@ -64,6 +64,7 @@ public sealed class ArticleQueuePublisherRabbit : IArticleQueuePublisher, IDispo
                 title = article.Title,
                 summary = article.Summary,
                 content = article.Content,
+                region = article.Region,
                 publishedAt = article.PublishedAt
             },
             idempotencyKey

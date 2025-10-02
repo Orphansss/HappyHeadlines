@@ -37,6 +37,7 @@ public sealed class PublishController : ControllerBase
                 Title: request.Title,
                 Summary: request.Summary,
                 Content: request.Content,
+                Region: request.Region,
                 IdempotencyKey: idempotencyKey
             );
 

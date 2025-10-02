@@ -1,4 +1,5 @@
 using System;
+using PublisherService.Domain.Entities;
 
 namespace PublisherService.Application.UseCases.PublishArticle;
 
@@ -8,5 +9,6 @@ public sealed record PublishArticleCommand(
     string Title,
     string? Summary,
     string Content,
+    Region Region,
     string? IdempotencyKey
 );

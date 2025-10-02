@@ -31,7 +31,8 @@ public sealed class PublishArticleHandler
             authorId: cmd.AuthorId,
             title: cleanedTitle,
             summary: cleanedSummary,
-            cleanedContent: cleanedContent
+            cleanedContent: cleanedContent,
+            region: cmd.Region
         );
 
         // 3) Publish to queue

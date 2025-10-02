@@ -1,3 +1,5 @@
+using PublisherService.Domain.Entities;
+
 namespace PublisherService.Api.Dtos;
 
 /// <summary>
@@ -7,5 +9,6 @@ public sealed record PublishRequestDto(
     int AuthorId,
     string Title,
     string? Summary,
-    string Content
+    string Content,
+    Region Region
 );

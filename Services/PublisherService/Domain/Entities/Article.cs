@@ -8,8 +8,9 @@ public sealed class Article
     public string? Summary { get; }
     public string Content { get; }
     public DateTimeOffset PublishedAt { get; }
+    public Region Region { get; set; }
 
-    private Article(int id, int authorId, string title, string? summary, string content, DateTimeOffset publishedAt)
+    private Article(int id, int authorId, string title, string? summary, string content, DateTimeOffset publishedAt, Region region)
     {
         Id = id;
         AuthorId = authorId;
@@ -17,12 +18,13 @@ public sealed class Article
         Summary = summary;
         Content = content;
         PublishedAt = publishedAt;
+        Region = region;
     }
 
     /// <summary>
     /// Factory for a *published* article. Caller passes already-cleaned content.
     /// </summary>
-    public static Article CreatePublished(int id, int authorId, string title, string? summary, string cleanedContent)
+    public static Article CreatePublished(int id, int authorId, string title, string? summary, string cleanedContent, Region region)
     {
         Guard.Positive(id, nameof(id));
         Guard.Positive(authorId, nameof(authorId));
@@ -37,6 +39,7 @@ public sealed class Article
             title: title.Trim(),
             summary: string.IsNullOrWhiteSpace(summary) ? null : summary.Trim(),
             content: cleanedContent,
+            region: region,
             publishedAt: DateTimeOffset.UtcNow
         );
     }
