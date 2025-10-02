@@ -1,53 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>7b152b02-4afb-4db2-be4e-7126945216d6</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>.</DockerfileContext>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+        <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\..\Infrastructure\Monitoring\Monitoring.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\appsettings.Development.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\appsettings.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.deps.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.runtimeconfig.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\bin\Debug\net8.0\AS_API.staticwebassets.endpoints.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\AS_API.csproj.nuget.dgspec.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\AS_API.sourcelink.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\staticwebassets.build.endpoints.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\Debug\net8.0\staticwebassets.build.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\project.assets.json" />
-	  <_ContentIncludedByDefault Remove="AS_API\obj\project.packagespec.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Api\" />
-	</ItemGroup>
-	
+    <ItemGroup>
+        <ProjectReference Include="..\..\Infrastructure\Monitoring\Monitoring.csproj" />
+    </ItemGroup>
 </Project>
