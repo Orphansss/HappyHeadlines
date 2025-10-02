@@ -1,5 +1,6 @@
 using ArticleService.Application.Interfaces;
 using ArticleService.Infrastructure;
+using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
@@ -34,6 +35,10 @@ namespace ArticleService
 
                 o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure());
             });
+            
+            // Register RabbitMQ consumer
+            builder.Services.AddHostedService<ArticleQueueConsumerRabbit>();   // runs as background worker
+            builder.Services.AddScoped<IArticleQueueConsumer, ArticleQueueConsumerRabbit>(); 
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
