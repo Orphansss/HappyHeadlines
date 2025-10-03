@@ -1,5 +1,6 @@
 using PublisherService.Application.Abstractions;
 using PublisherService.Domain.Entities;
+using Serilog;
 
 namespace PublisherService.Application.UseCases.PublishArticle;
 
@@ -40,6 +41,8 @@ public sealed class PublishArticleHandler
 
         // 4) Ack
         Console.WriteLine("Published article: " + System.Text.Json.JsonSerializer.Serialize(article));
+        Log.Information("Published article: {Article}", System.Text.Json.JsonSerializer.Serialize(article));
+
         return new PublishArticleResult(PublicationId: article.Id, AcceptedAt: DateTimeOffset.UtcNow);
     }
 }

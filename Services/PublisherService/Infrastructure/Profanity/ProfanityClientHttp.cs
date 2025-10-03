@@ -1,6 +1,7 @@
 using PublisherService.Application.Abstractions;
 using PublisherService.Application.Common;
 using PublisherService.Infrastructure.Profanity.Dtos;
+using Serilog;
 
 namespace PublisherService.Infrastructure.Profanity;
 
@@ -15,6 +16,7 @@ public sealed class ProfanityClientHttp : IProfanityClient
     {
         try
         {
+            Log.Information("Filtering text for profanity...");
             using var res = await _http.PostAsJsonAsync(FilterPath, new FilterRequestDto(text), ct);
             res.EnsureSuccessStatusCode();
 

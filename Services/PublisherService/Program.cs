@@ -3,8 +3,12 @@ using PublisherService.Application.Abstractions;
 using PublisherService.Infrastructure.Messaging;
 using PublisherService.Infrastructure.Profanity;
 using PublisherService.Application.UseCases.PublishArticle;
+using Serilog;
+using Monitoring;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddMonitoring("PublisherService"); // adding SeriLog now through or Monitoring class
 
 // ---- Configure options ----
 builder.Services.Configure<MessagingOptions>(
@@ -51,5 +55,9 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// add traceId into all logs + request logging
+app.UseTraceIdEnricher();
+app.UseSerilogRequestLogging();
 
 app.Run();

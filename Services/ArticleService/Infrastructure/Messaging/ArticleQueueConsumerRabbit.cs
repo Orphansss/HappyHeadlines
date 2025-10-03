@@ -94,7 +94,7 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
             }
             catch (Exception e)
             {
-                Log.Information(e, "Failed to consume article message...");
+                Log.Error(e, "Failed to consume article message...");
                 _logger.LogError(e, "Failed to consume article message");
                 
                 _channel?.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
