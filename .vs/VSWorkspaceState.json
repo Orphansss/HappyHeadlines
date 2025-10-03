@@ -1,13 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\Services",
-    "\\Services\\ArticleService",
-    "\\Services\\CommentService\\Data",
-    "\\Services\\ProfanityService",
-    "\\Services\\ProfanityService\\Controllers",
-    "\\Services\\ProfanityService\\Data"
+    ""
   ],
-  "SelectedNode": "\\Services\\ProfanityService\\ProfanityService.csproj",
+  "SelectedNode": "\\NewsletterService.sln",
   "PreviewInSolutionExplorer": false
 }
