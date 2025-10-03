@@ -1,10 +1,11 @@
-using System.Text;
-using System.Text.Json;
 using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
+using ArticleService.Infrastructure.Data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
+using System.Text;
+using System.Text.Json;
 
 namespace ArticleService.Infrastructure.Messaging;
 
@@ -66,8 +67,11 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
                 };
                 
                 using var scope = _serviceProvider.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ArticleDbContext>();
-                
+                var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+                var payload = envelope.article;
+                await using var db = RegionDbContextFactory.CreateDbContext(payload.region, cfg);
+
                 var existing = await db.Articles.FindAsync(new object[] { envelope.article.id }, stoppingToken);
                 if (existing == null)
                 {

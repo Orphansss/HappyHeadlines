@@ -77,6 +77,105 @@ services:
       - "14338:1433"
     <<: [*healthcheck_mssql, *restart]
 
+      # ---------- Article databases ----------
+  # articles-europe-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-europe:/var/opt/mssql
+  #   ports:
+  #     - "14331:1433"   # Europe
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-asia-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-asia:/var/opt/mssql
+  #   ports:
+  #     - "14332:1433"   # Asia
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-africa-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-africa:/var/opt/mssql
+  #   ports:
+  #     - "14333:1433"   # Africa
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-northamerica-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-northamerica:/var/opt/mssql
+  #   ports:
+  #     - "14334:1433"   # North America
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-southamerica-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-southamerica:/var/opt/mssql
+  #   ports:
+  #     - "14335:1433"   # South America
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-oceania-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-oceania:/var/opt/mssql
+  #   ports:
+  #     - "14336:1433"   # Oceania
+  #   <<: [*healthcheck_mssql, *restart]
+
+  # articles-antarctica-db:
+  #   image: "${DB_IMAGE}"
+  #   platform: "${DB_PLATFORM}"
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "${DB_PASSWORD}"
+  #     MSSQL_PID: "Developer"
+  #     MSSQL_MEMORY_LIMIT_MB: "1024"
+  #   volumes:
+  #     - mssql-antarctica:/var/opt/mssql
+  #   ports:
+  #     - "14337:1433"   # Antarctica
+  #   <<: [*healthcheck_mssql, *restart]
+
   # ---------- Comment Database ----------
   comments-db:
     image: "${DB_IMAGE}"
@@ -128,11 +227,32 @@ services:
       replicas: 3   # note: ignored by compose; use --scale if needed
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8080"
-      ConnectionStrings__Global:  "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
-      ConnectionStrings__Default: "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__Africa:       "Server=articles-africa-db,1433;Database=ArticlesDb_Africa;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__Asia:         "Server=articles-asia-db,1433;Database=ArticlesDb_Asia;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__Europe:       "Server=articles-europe-db,1433;Database=ArticlesDb_Europe;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__NorthAmerica: "Server=articles-northamerica-db,1433;Database=ArticlesDb_NorthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__SouthAmerica: "Server=articles-southamerica-db,1433;Database=ArticlesDb_SouthAmerica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__Oceania:      "Server=articles-oceania-db,1433;Database=ArticlesDb_Oceania;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      # ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=ArticlesDb_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
     depends_on:
+      # articles-africa-db:
+      #   condition: service_healthy
+      # articles-asia-db:
+      #   condition: service_healthy
+      # articles-europe-db:
+      #   condition: service_healthy
+      # articles-northamerica-db:
+      #   condition: service_healthy
+      # articles-southamerica-db:
+      #   condition: service_healthy
+      # articles-oceania-db:
+      #   condition: service_healthy
+      # articles-antarctica-db:
+      #   condition: service_healthy
       articles-global-db:
         condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
@@ -276,6 +396,13 @@ services:
     <<: [*restart]
 
 volumes:
+  # mssql-europe:
+  # mssql-asia:
+  # mssql-africa:
+  # mssql-northamerica:
+  # mssql-southamerica:
+  # mssql-oceania:
+  # mssql-antarctica:
   mssql-global:
   mssql-comments:
   mssql-profanity:
