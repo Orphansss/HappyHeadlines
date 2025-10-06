@@ -40,7 +40,6 @@ x-healthcheck-tcp-8083: &healthcheck_tcp_8083
     retries: 30
     start_period: 20s
     
-  # ---------- Reusable healthcheck for RabbitMQ ----------
 x-healthcheck-rabbit: &healthcheck_rabbit
   healthcheck:
     test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
@@ -49,7 +48,6 @@ x-healthcheck-rabbit: &healthcheck_rabbit
     retries: 10
     start_period: 10s
       
-  # ---------- Reusable healthcheck for PublisherService ----------
 x-healthcheck-tcp-8082: &healthcheck_tcp_8082
   healthcheck:
     test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8082' || exit 1"]
@@ -57,7 +55,14 @@ x-healthcheck-tcp-8082: &healthcheck_tcp_8082
     timeout: 3s
     retries: 30
     start_period: 20s
-
+    
+x-healthcheck-redis: &healthcheck_redis
+  healthcheck:
+    test: [ "CMD", "redis-cli", "ping" ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 5s
 
 x-restart: &restart
   restart: unless-stopped
@@ -236,6 +241,7 @@ services:
       # ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=ArticlesDb_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Redis: "redis:6379,abortConnect=false"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
     depends_on:
@@ -255,8 +261,9 @@ services:
       #   condition: service_healthy
       articles-global-db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
-    # (No ports here – exposed via lb:8080)
 
   # ---------- CommentService ----------
   comment-service:
@@ -266,6 +273,7 @@ services:
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      ConnectionStrings__Redis: "redis:6379,abortConnect=false"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
@@ -273,6 +281,8 @@ services:
       comments-db:
         condition: service_healthy
       profanity-service:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8081:8081"
@@ -394,6 +404,16 @@ services:
       - "16686:16686"  # Jaeger UI
       - "4317:4317"    # OTLP gRPC
     <<: [*restart]
+    
+  # ---------- Redis (distributed cache) ----------
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    <<: [ *healthcheck_redis, *restart ]
 
 volumes:
   # mssql-europe:
@@ -408,3 +428,4 @@ volumes:
   mssql-profanity:
   mssql-draft:
   seq-data:
+  redis-data:
