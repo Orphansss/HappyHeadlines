@@ -1,9 +1,9 @@
 namespace CommentService.Models;
 
-public class Comment
-{
+public class Comment {
     public int Id { get; set; }
-    public int AuthorId { get; set; }    
-    public string Content { get; set; } 
-    public DateTimeOffset PublishedAt { get; set; } = DateTimeOffset.UtcNow; 
+    public int ArticleId { get; set; } 
+    public int AuthorId { get; set; }
+    public string Content { get; set; } = "";
+    public DateTimeOffset PublishedAt { get; set; } = DateTimeOffset.UtcNow;
 }
