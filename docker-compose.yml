@@ -326,7 +326,7 @@ services:
   publisher-service:
     build:
       context: .
-      dockerfile: /Services/PublisherService/Dockerfile
+      dockerfile: Services/PublisherService/Dockerfile
     environment:
       ASPNETCORE_URLS: "http://0.0.0.0:8082"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
