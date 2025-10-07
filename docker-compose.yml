@@ -236,6 +236,9 @@ services:
       # ConnectionStrings__Antarctica:   "Server=articles-antarctica-db,1433;Database=ArticlesDb_Antarctica;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Global:       "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      Cache__Redis: "article-redis:6379"
+      Cache__WarmupSeconds: "300"      # every 5 minutes
+      Cache__TtlMinutes: "20160"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
     depends_on:
@@ -267,6 +270,9 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
+      Cache__Redis: "article-redis:6379"
+      Cache__WarmupSeconds: "300"      # every 5 minutes
+      Cache__TtlMinutes: "20160"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
     depends_on:
@@ -394,6 +400,46 @@ services:
       - "16686:16686"  # Jaeger UI
       - "4317:4317"    # OTLP gRPC
     <<: [*restart]
+
+# ---------- Caches ----------
+article-redis:
+  image: redis:7-alpine
+  command: ["redis-server","--save","", "--appendonly","no"]
+  healthcheck:
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 5s
+    timeout: 3s
+    retries: 20
+  <<: [*restart]
+
+comment-redis:
+  image: redis:7-alpine
+  command: ["redis-server","--save","", "--appendonly","no"]
+  healthcheck:
+    test: ["CMD", "redis-cli", "ping"]
+    interval: 5s
+    timeout: 3s
+    retries: 20
+  <<: [*restart]
+
+# ---------- Prometheus ----------
+prometheus:
+  image: prom/prometheus:v2.54.1
+  volumes:
+    - ./Infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  ports:
+    - "9090:9090"
+  <<: [*restart]
+
+# ---------- Grafana ----------
+grafana:
+  image: grafana/grafana:10.4.3
+  ports:
+    - "3000:3000"
+  environment:
+    GF_SECURITY_ADMIN_USER: admin
+    GF_SECURITY_ADMIN_PASSWORD: admin
+  <<: [*restart]
 
 volumes:
   # mssql-europe:

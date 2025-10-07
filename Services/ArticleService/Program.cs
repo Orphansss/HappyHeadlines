@@ -4,6 +4,8 @@ using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Prometheus;
 
 namespace ArticleService
 {
@@ -14,6 +16,13 @@ namespace ArticleService
             var builder = WebApplication.CreateBuilder(args);
 
             builder.AddMonitoring("ArticleService"); // adding SeriLog now through or Monitoring class
+                                                     // Redis cache
+            builder.Services.AddStackExchangeRedisCache(o =>
+                o.Configuration = builder.Configuration["Cache:Redis"]);
+
+            // metrics (custom counters)
+            ArticleCacheMetrics.Register();
+
 
             // Gør HttpContext tilgængelig (til at læse X-Region / ?region=)
             builder.Services.AddHttpContextAccessor();
@@ -74,6 +83,10 @@ namespace ArticleService
             app.UseSwagger();
             app.UseSwaggerUI();
             app.MapControllers();
+
+            // Prometheus
+            app.UseMetricServer(); // exposes /metrics
+            app.UseHttpMetrics();
 
             // add traceId into all logs + request logging
             app.UseTraceIdEnricher();

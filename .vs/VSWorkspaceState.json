@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\Services",
+    "\\Services\\ArticleService",
+    "\\Services\\ArticleService\\Infrastructure",
+    "\\Services\\ArticleService\\Infrastructure\\Caching",
+    "\\Services\\CommentService"
   ],
-  "SelectedNode": "\\NewsletterService.sln",
+  "SelectedNode": "\\Services\\ArticleService\\Infrastructure\\Caching\\ArticleCache.cs",
   "PreviewInSolutionExplorer": false
 }
