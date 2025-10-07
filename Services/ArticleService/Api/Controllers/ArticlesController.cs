@@ -1,4 +1,6 @@
-﻿using ArticleService.Application.Interfaces;
+﻿using ArticleService.Api.Contracts.Dtos;
+using ArticleService.Api.Contracts.Mappings;
+using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +11,16 @@ namespace ArticleService.Api.Controllers;
 public sealed class ArticlesController(IArticleService articleService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<Article>> Create([FromBody] Article input, CancellationToken ct)
+    [ProducesResponseType(typeof(ArticleResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ArticleResponse>> Create([FromBody] CreateArticleRequest request, CancellationToken ct)
     {
         try
         {
-            var created = await articleService.CreateAsync(input, ct);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            var article = request.ToEntity();
+            var created = await articleService.CreateAsync(article, ct);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created.ToResponse());
+
         }
         catch (ArgumentException ex)
         {

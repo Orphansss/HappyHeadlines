@@ -13,7 +13,7 @@ public class ArticleDbContext(DbContextOptions<ArticleDbContext> options) : DbCo
         {
             e.ToTable("Articles");
             e.HasKey(x => x.Id);
-            e.Property(x => x.Id).ValueGeneratedNever();   // We provide the Ids
+            e.Property(x => x.Id).UseIdentityColumn();
             e.Property(x => x.Title).IsRequired().HasMaxLength(200);
             e.Property(x => x.Summary).HasMaxLength(500);
             e.Property(x => x.Content).IsRequired();
