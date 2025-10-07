@@ -238,6 +238,7 @@ services:
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
+      Redis__Configuration: "redis:6379,abortConnect=false"
     depends_on:
       # articles-africa-db:
       #   condition: service_healthy
@@ -393,6 +394,12 @@ services:
     ports:
       - "16686:16686"  # Jaeger UI
       - "4317:4317"    # OTLP gRPC
+    <<: [*restart]
+
+  redis:
+    image: redis:8.2
+    ports:
+      - "6379:6379"
     <<: [*restart]
 
 volumes:
