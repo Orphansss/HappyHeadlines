@@ -29,9 +29,6 @@ public sealed class ArticleService(ArticleDbContext db, IArticleCache cache) : I
         
         Log.Information("Article created with ArticleId: {ArticleId}", input.Id);
 
-        /// Cache the article
-        await cache.SetByIdAsync(input, ct);
-
         return input;
     }
 
