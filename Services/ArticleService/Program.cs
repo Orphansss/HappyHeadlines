@@ -1,10 +1,14 @@
 using ArticleService.Application.Interfaces;
+using ArticleService.Application.Services.Decorators;
 using ArticleService.Infrastructure;
+using ArticleService.Infrastructure.Caching;
+using ArticleService.Infrastructure.Hosted;
 using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
 using Prometheus;
+using StackExchange.Redis;
 
 namespace ArticleService
 {
@@ -21,21 +25,59 @@ namespace ArticleService
 
             // Registrér vores RegionResolver (finder den rigtige connection pr. request)
             builder.Services.AddScoped<IRegionResolver, RegionResolver>();
-            // Application services
+            
+            // Redis
+            // Read and validate (fail fast if missing)
+            var redisConnString = builder.Configuration.GetConnectionString("Redis")
+                                  ?? throw new InvalidOperationException("Missing connection string: 'Redis'");
+
+            // Distributed cache (IDistributedCache)
+            builder.Services.AddStackExchangeRedisCache(o =>
+            {
+                o.Configuration = redisConnString;
+            });
+
+            // Redis multiplexer for LRU ZSET ops
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                var cfg = ConfigurationOptions.Parse(redisConnString);
+                cfg.AbortOnConnectFail = false; // don’t crash on cold start
+                cfg.ConnectRetry       = 3;
+                cfg.ConnectTimeout     = 3000;
+                return ConnectionMultiplexer.Connect(cfg);
+            });
+            
+            // Caching services
+            builder.Services.AddSingleton(new ArticleCacheOptions());
+            builder.Services.AddScoped<IArticleCache, RedisArticleCache>();
+
+            // Inner service
             builder.Services.AddScoped<IArticleService, Application.Services.ArticleService>();
 
+            // Apply the decorator pattern with Scrutor
+            builder.Services.Decorate<IArticleService, ArticleServiceCachingDecorator>();
+
+            // Warmup worker
+            builder.Services.AddHostedService<ArticleCacheWarmupWorker>();
 
             // Konfigurér DbContext med connection string valgt ved runtime (per request)
             builder.Services.AddDbContext<ArticleDbContext>((sp, o) =>
             {
                 var cfg = sp.GetRequiredService<IConfiguration>();
                 var def = cfg.GetConnectionString("Default");
-                var cs = string.IsNullOrWhiteSpace(def)
-                    ? sp.GetRequiredService<IRegionResolver>().ResolveConnection(cfg)
-                    : def;
+                var cs  = string.IsNullOrWhiteSpace(def)
+                    ? sp.GetRequiredService<IRegionResolver>().ResolveConnection(cfg) // fallback
+                    : def; // Default==Global in compose
 
                 o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure());
             });
+
+            // Factory with same options => also resolves to Default (= Global)
+            builder.Services.AddDbContextFactory<ArticleDbContext>(o =>
+                o.UseSqlServer(builder.Configuration.GetConnectionString("Default") ??
+                               builder.Configuration.GetConnectionString("Global"),
+                    sql => sql.EnableRetryOnFailure()));
+
             
             // Register RabbitMQ consumer
             builder.Services.AddHostedService<ArticleQueueConsumerRabbit>();   // runs as background worker
