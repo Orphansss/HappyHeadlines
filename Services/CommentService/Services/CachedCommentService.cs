@@ -1,10 +1,10 @@
-using CommentService.Data;
 using CommentService.Interfaces;
 using CommentService.Models;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Serilog;
 using StackExchange.Redis;
+using Monitoring;
 
 namespace CommentService.Services;
 
@@ -15,7 +15,7 @@ public class CachedCommentService : ICommentService
     private readonly IConnectionMultiplexer _redis;
 
     // Set time-to-live: LRU will constrain memory by latest accessed articles (30)
-    private static readonly DistributedCacheEntryOptions _commentTtl =
+    private static readonly DistributedCacheEntryOptions CommentTtl =
         new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) };
 
     public CachedCommentService(
@@ -33,6 +33,9 @@ public class CachedCommentService : ICommentService
     {
         var key = CacheKeys.CommentsByArticle(articleId); //  "hh:v1:comments:article:{articleId}";
 
+        // METRIC: cache lookup attempts
+        CacheMetrics.Request("comments");
+
         try
         {
             // HIT
@@ -40,12 +43,17 @@ public class CachedCommentService : ICommentService
             if (!string.IsNullOrEmpty(cached))
             {
                 var comments = JsonConvert.DeserializeObject<List<Comment>>(cached)!;
-                Log.Information("CommentCache HIT for article {ArticleId} key {Key} count {Count}",
+
+                // METRIC: cache returned a value
+                CacheMetrics.Hit("comments");
+
+                Log.Debug("CommentCache HIT for article {ArticleId} key {Key} count {Count}",
                     articleId, key, comments.Count);
 
                 await BumpLruAsync(articleId);
                 return comments;
             }
+
             Log.Information("CommentCache MISS for article {ArticleId} key {Key}", articleId, key);
         }
         catch (Exception ex)
@@ -64,8 +72,15 @@ public class CachedCommentService : ICommentService
             var shortTtl = new DistributedCacheEntryOptions
                 { AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(45) };
 
-            await _cache.SetStringAsync(key, "[]", shortTtl, ct);
-            Log.Information("CommentCache SET EMPTY (short TTL) for article {ArticleId} key {Key}", articleId, key);
+            try
+            {
+                await _cache.SetStringAsync(key, "[]", shortTtl, ct);
+                Log.Information("CommentCache SET EMPTY (short TTL) for article {ArticleId} key {Key}", articleId, key);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "CommentCache ERROR writing EMPTY for article {ArticleId} key {Key}", articleId, key);
+            }
 
             return fromDb;
         }
@@ -74,14 +89,17 @@ public class CachedCommentService : ICommentService
         try
         {
             var payload = JsonConvert.SerializeObject(fromDb);
-            await _cache.SetStringAsync(key, payload, _commentTtl, ct);
+            await _cache.SetStringAsync(key, payload, CommentTtl, ct);
             Log.Information("CommentCache SET for article {ArticleId} key {Key} count {Count}",
                 articleId, key, fromDb.Count);
             
             await BumpLruAsync(articleId);
+
             var evicted = await EnforceLruLimitAsync();
             if (evicted > 0)
             {
+                // METRIC: count LRU cleanups
+                CacheMetrics.Evicted("comments");
                 Log.Information("CommentCache LRU evicted {EvictedCount} article thread(s)", evicted);
             }
         }
@@ -89,6 +107,7 @@ public class CachedCommentService : ICommentService
         {
             Log.Warning(ex, "CommentCache ERROR on write for article {ArticleId} key {Key}", articleId, key);
         }
+
         return fromDb;
     }
 
@@ -112,24 +131,34 @@ public class CachedCommentService : ICommentService
                 list = list
                     .OrderByDescending(c => c.PublishedAt)
                     .ToList();
-                await _cache.SetStringAsync(key, JsonConvert.SerializeObject(list), _commentTtl, ct);
+
+                await _cache.SetStringAsync(key, JsonConvert.SerializeObject(list), CommentTtl, ct);
                 
                 Log.Information("CommentCache UPDATE (append) for article {ArticleId} key {Key} newCount {Count}",
                     created.ArticleId, key, list.Count);
             }
-            // If not present in the cache, do nothing (it will be filled on next read)
-            Log.Information("CommentCache MISS for article {ArticleId} key {Key}", comment.ArticleId, key);
+            else
+            {
+                // If not present in the cache, do nothing (it will be filled on next read)
+                Log.Information("CommentCache MISS for article {ArticleId} key {Key}", comment.ArticleId, key);
+            }
 
             await BumpLruAsync(created.ArticleId);
+
             var evicted = await EnforceLruLimitAsync();
             if (evicted > 0)
+            {
+                // METRIC: count LRU cleanups
+                CacheMetrics.Evicted("comments");
                 Log.Information("CommentCache LRU evicted {EvictedCount} article thread(s) after create", evicted);
+            }
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "CommentCache ERROR after create for article {ArticleId} key {Key}",
                 created.ArticleId, key);      
         }
+
         return created;
     }
     
@@ -196,7 +225,7 @@ public class CachedCommentService : ICommentService
             var db = _redis.GetDatabase();
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             await db.SortedSetAddAsync(CacheKeys.CommentsLru, articleId, now);
-            Log.Information("CommentCache LRU bump for article {ArticleId}", articleId);
+            Log.Debug("CommentCache LRU bump for article {ArticleId}", articleId);
         }
         catch (Exception ex)
         {
@@ -243,5 +272,4 @@ public class CachedCommentService : ICommentService
             return 0;
         }
     }
-    
 }
