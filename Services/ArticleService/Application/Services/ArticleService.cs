@@ -3,10 +3,11 @@ using ArticleService.Domain.Entities;
 using ArticleService.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ArticleService.Application.Services;
 
-public sealed class ArticleService(ArticleDbContext db) : IArticleService
+public sealed class ArticleService(ArticleDbContext db, IArticleCache cache) : IArticleService
 {
     public async Task<Article> CreateAsync(Article input, CancellationToken ct = default)
     {
@@ -28,6 +29,9 @@ public sealed class ArticleService(ArticleDbContext db) : IArticleService
         
         Log.Information("Article created with ArticleId: {ArticleId}", input.Id);
 
+        /// Cache the article
+        await cache.SetByIdAsync(input, ct);
+
         return input;
     }
 
@@ -36,8 +40,20 @@ public sealed class ArticleService(ArticleDbContext db) : IArticleService
             .OrderByDescending(a => a.PublishedAt)
             .ToListAsync(ct);
 
-    public async Task<Article?> GetByIdAsync(int id, CancellationToken ct = default) =>
-        await db.Articles.FindAsync([id], ct);
+    public async Task<Article?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        //Try to Fetch from Cache
+        var cached = await cache.GetByIdAsync(id, ct);
+        if (cached is not null)
+        {
+            Log.Information("Cache hit for ArticleId: {ArticleId}", id);
+            return cached;
+        }
+
+        //If cache miss, fetch from db
+        var existing = await db.Articles.FindAsync([id], ct);
+        return existing;
+    }
 
     public async Task<Article?> UpdateAsync(int id, Article input, CancellationToken ct = default)
     {
