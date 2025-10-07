@@ -5,10 +5,8 @@ using ArticleService.Application.Interfaces;
 
 namespace ArticleService.Infrastructure.Caching;
 
-public sealed class ArticleCache : IArticleCache
+public sealed class ArticleCache(IDistributedCache cache) : IArticleCache
 {
-    private readonly IDistributedCache _cache;
-
     /// <summary>
     /// Gives more options for JsonSerializer
     /// </summary>
@@ -22,12 +20,11 @@ public sealed class ArticleCache : IArticleCache
     /// How long a aricle should live in the cache.
     /// </summary>
     private static readonly DistributedCacheEntryOptions ItemTtl =
-        new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(14) };
+        new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) };
 
-    public ArticleCache(IDistributedCache cache) => _cache = cache;
 
     /// <summary>
-    /// The name of the keys for a article.
+    /// The name of the keys for articles in the cache.
     /// </summary>
     private static string KeyById(int id) => $"articles:{id}";
 
@@ -37,7 +34,7 @@ public sealed class ArticleCache : IArticleCache
     /// </summary>
     public async Task<Article?> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        var bytes = await _cache.GetAsync(KeyById(id), ct);
+        var bytes = await cache.GetAsync(KeyById(id), ct);
         return bytes is null ? null : JsonSerializer.Deserialize<Article>(bytes, _json);
     }
 
@@ -45,7 +42,7 @@ public sealed class ArticleCache : IArticleCache
     /// Remove a article from the cache by its Id.
     /// </summary>
     public Task RemoveByIdAsync(int id, CancellationToken ct = default) =>
-        _cache.RemoveAsync(KeyById(id), ct);
+        cache.RemoveAsync(KeyById(id), ct);
 
     /// <summary>
     /// Place a article in the cache.
@@ -54,6 +51,6 @@ public sealed class ArticleCache : IArticleCache
     public Task SetByIdAsync(Article article, CancellationToken ct = default)
     {
         var bytes = JsonSerializer.SerializeToUtf8Bytes(article, _json);
-        return _cache.SetAsync(KeyById(article.Id), bytes, ItemTtl, ct);
+        return cache.SetAsync(KeyById(article.Id), bytes, ItemTtl, ct);
     }
 }
