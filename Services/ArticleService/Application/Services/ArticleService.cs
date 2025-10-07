@@ -1,3 +1,5 @@
+using ArticleService.Api.Contracts.Dtos;
+using ArticleService.Api.Contracts.Mappings;
 using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
 using ArticleService.Infrastructure;
@@ -8,60 +10,102 @@ namespace ArticleService.Application.Services;
 
 public sealed class ArticleService(ArticleDbContext db) : IArticleService
 {
-    public async Task<Article> CreateAsync(Article input, CancellationToken ct = default)
+    public async Task<ArticleResponse> CreateAsync(CreateArticleRequest input, CancellationToken ct = default)
     {
-        
+        Log.Information("CreateArticle requested by AuthorId={AuthorId} Title='{Title}'", input.AuthorId, input.Title);
+
         if (string.IsNullOrWhiteSpace(input.Title))
             throw new ArgumentException("Title is required.", nameof(input.Title));
 
-        // ensure EF generates the key
-        input.Id = 0;
+        var entity = new Article
+        {
+            AuthorId = input.AuthorId,
+            Title = input.Title.Trim(),
+            Summary = input.Summary,
+            Content = input.Content,
+            PublishedAt = DateTimeOffset.UtcNow
+        };
 
-        // default PublishedAt if not set
-        if (input.PublishedAt == default)
-            input.PublishedAt = DateTimeOffset.UtcNow;
-
-        Log.Information("Creating Article with ArticleId: {ArticleId}, AuthorId: {AuthorId}, Title: {Title}",input.Id, input.AuthorId, input.Title);
-
-        db.Articles.Add(input);
+        db.Articles.Add(entity);
         await db.SaveChangesAsync(ct);
-        
-        Log.Information("Article created with ArticleId: {ArticleId}", input.Id);
 
-        return input;
+        Log.Information("Article created ArticleId={ArticleId} AuthorId={AuthorId}", entity.Id, entity.AuthorId);
+        return entity.ToResponse();
     }
 
-    public async Task<IReadOnlyList<Article>> GetAllAsync(CancellationToken ct = default) =>
-        await db.Articles
+    public async Task<IReadOnlyList<ArticleResponse>> GetAllAsync(CancellationToken ct = default)
+    {
+        Log.Debug("GetAllArticles requested");
+        var list = await db.Articles
             .OrderByDescending(a => a.PublishedAt)
+            .Select(a => a.ToResponse())
             .ToListAsync(ct);
 
-    public async Task<Article?> GetByIdAsync(int id, CancellationToken ct = default) =>
-        await db.Articles.FindAsync([id], ct);
+        Log.Debug("GetAllArticles returning Count={Count}", list.Count);
+        return list;
+    }
 
-    public async Task<Article?> UpdateAsync(int id, Article input, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ArticleResponse>> GetLatestAsync(int count, CancellationToken ct = default)
     {
-        var existing = await db.Articles.FindAsync([id], ct);
-        if (existing is null) return null;
+        Log.Debug("GetLatestArticles requested Count={Count}", count);
+        var list = await db.Articles
+            .OrderByDescending(a => a.PublishedAt)
+            .Take(count)
+            .Select(a => a.ToResponse())
+            .ToListAsync(ct);
 
-        if (!string.IsNullOrWhiteSpace(input.Title))
-            existing.Title = input.Title.Trim();
+        Log.Debug("GetLatestArticles returning Count={Count}", list.Count);
+        return list;
+    }
 
-        existing.Summary = input.Summary; // null allowed
-        existing.Content = input.Content; // consider null/empty rules
+    public async Task<ArticleResponse?> GetByIdAsync(int id, CancellationToken ct = default)
+    {
+        Log.Debug("GetArticleById requested Id={ArticleId}", id);
+        var a = await db.Articles.FindAsync([id], ct);
 
-        // we keep PublishedAt as-is
+        if (a is null)
+        {
+            Log.Information("GetArticleById not found Id={ArticleId}", id);
+            return null;
+        }
+
+        Log.Debug("GetArticleById found Id={ArticleId}", id);
+        return a.ToResponse();
+    }
+
+    public async Task<ArticleResponse?> UpdateAsync(int id, UpdateArticleRequest input, CancellationToken ct = default)
+    {
+        Log.Information("UpdateArticle requested Id={ArticleId}", id);
+        var a = await db.Articles.FindAsync([id], ct);
+        if (a is null)
+        {
+            Log.Information("UpdateArticle not found Id={ArticleId}", id);
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(input.Title)) a.Title = input.Title.Trim();
+        if (input.Summary is not null) a.Summary = input.Summary;
+        if (input.Content is not null) a.Content = input.Content;
+
         await db.SaveChangesAsync(ct);
-        return existing;
+        Log.Information("UpdateArticle succeeded Id={ArticleId}", id);
+        return a.ToResponse();
     }
 
     public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
-        var existing = await db.Articles.FindAsync([id], ct);
-        if (existing is null) return false;
+        Log.Information("DeleteArticle requested Id={ArticleId}", id);
+        var a = await db.Articles.FindAsync([id], ct);
+        if (a is null)
+        {
+            Log.Information("DeleteArticle not found Id={ArticleId}", id);
+            return false;
+        }
 
-        db.Articles.Remove(existing);
+        db.Articles.Remove(a);
         await db.SaveChangesAsync(ct);
+        Log.Information("DeleteArticle succeeded Id={ArticleId}", id);
         return true;
     }
+
 }
