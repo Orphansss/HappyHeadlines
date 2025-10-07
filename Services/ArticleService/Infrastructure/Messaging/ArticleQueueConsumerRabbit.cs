@@ -1,11 +1,11 @@
 using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
-using ArticleService.Infrastructure.Data;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
 using System.Text;
 using System.Text.Json;
+using ArticleService.Api.Contracts.Dtos;
 
 namespace ArticleService.Infrastructure.Messaging;
 
@@ -87,15 +87,20 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
                 
                 await db.SaveChangesAsync(stoppingToken);
                 
+                // Write-through cache using the DTO we already have
+                var cache = scope.ServiceProvider.GetRequiredService<IArticleCache>();
+                var dto = new ArticleResponse(
+                    article.Id, article.AuthorId, article.Title, article.Summary, article.Content, article.PublishedAt);
+                // Save consumed article in the cache
+                await cache.SetByIdAsync(dto, ttl: null, stoppingToken); // use default TTL from options
+                
                 _channel.BasicAck(ea.DeliveryTag, multiple: false);
                 
                 Log.Information("Article queue consumed {article}", System.Text.Json.JsonSerializer.Serialize(article));
-                _logger.LogInformation("Article queue consumed {article}", System.Text.Json.JsonSerializer.Serialize(article));
             }
             catch (Exception e)
             {
                 Log.Error(e, "Failed to consume article message...");
-                _logger.LogError(e, "Failed to consume article message");
                 
                 _channel?.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
             }
@@ -114,12 +119,4 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
     }
 
 }
-
-
-
-
-
-
-
-
 
