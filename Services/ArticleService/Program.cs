@@ -2,6 +2,7 @@ using ArticleService.Application.Interfaces;
 using ArticleService.Infrastructure;
 using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
+using ArticleService.Infrastructure.Caching;
 using Serilog;
 using Monitoring;
 
@@ -23,7 +24,6 @@ namespace ArticleService
             // Application services
             builder.Services.AddScoped<IArticleService, Application.Services.ArticleService>();
 
-
             // Konfigurér DbContext med connection string valgt ved runtime (per request)
             builder.Services.AddDbContext<ArticleDbContext>((sp, o) =>
             {
@@ -35,7 +35,14 @@ namespace ArticleService
 
                 o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure());
             });
-            
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+            });
+
+            builder.Services.AddScoped<IArticleCache, ArticleCache>();
+
             // Register RabbitMQ consumer
             builder.Services.AddHostedService<ArticleQueueConsumerRabbit>();   // runs as background worker
             builder.Services.AddScoped<IArticleQueueConsumer, ArticleQueueConsumerRabbit>(); 
