@@ -8,6 +8,7 @@ using Polly.Extensions.Http;
 using Serilog;
 using Monitoring;
 using StackExchange.Redis;
+using Prometheus;
 
 namespace CommentService
 {
@@ -109,8 +110,13 @@ namespace CommentService
                 db.Database.Migrate();
             }
 
+            // Prometheus HTTP metrics (place before handlers so it observes them)
+            app.UseHttpMetrics();
+            // Expose /metrics endpoint
+            app.MapMetrics();
+            
             app.MapControllers();
-
+            
             // add traceId into all logs + nice request logging
             app.UseTraceIdEnricher();
             app.UseSerilogRequestLogging();

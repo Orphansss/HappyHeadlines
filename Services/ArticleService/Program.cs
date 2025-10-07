@@ -4,6 +4,7 @@ using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
+using Prometheus;
 
 namespace ArticleService
 {
@@ -71,14 +72,24 @@ namespace ArticleService
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
             app.MapGet("/", () => Results.Redirect("/swagger"));
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Environment.IsProduction())
+            {
+                // Swagger JSON + UI available at /swagger
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+            
+            // Prometheus HTTP metrics (place before handlers so it observes them)
+            app.UseHttpMetrics();
+            // Expose /metrics endpoint
+            app.MapMetrics();
+            
             app.MapControllers();
 
             // add traceId into all logs + request logging
             app.UseTraceIdEnricher();
             app.UseSerilogRequestLogging();
-
+            
             app.Run();
         }
     }
