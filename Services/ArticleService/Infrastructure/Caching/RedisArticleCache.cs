@@ -57,7 +57,7 @@ public sealed class RedisArticleCache : IArticleCache
     public async Task RefreshSingleAsync(int id, CancellationToken ct = default)
     {
         // Pull fresh from DB -> to DTO -> set
-        await using var db = await _globalDbFactory.CreateDbContextAsync(ct);  // ✅ create DbContext
+        await using var db = await _globalDbFactory.CreateDbContextAsync(ct);  // create DbContext
         var a = await db.Articles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (a is null) { await RemoveByIdAsync(id, ct); return; }
 
@@ -65,13 +65,14 @@ public sealed class RedisArticleCache : IArticleCache
         await SetByIdAsync(dto, _options.ArticleTtl, ct);
     }
 
-    public async Task WarmLast14DaysAsync(CancellationToken ct = default)
+    public async Task<int> WarmLast14DaysAsync(CancellationToken ct = default)
     {
-        await using var db = await _globalDbFactory.CreateDbContextAsync(ct);  // ✅ create DbContext
+        await using var db = await _globalDbFactory.CreateDbContextAsync(ct);
         var since = DateTimeOffset.UtcNow.AddDays(-_options.WarmWindowDays);
 
-        // Page by PublishedAt desc
-        int page = 0;
+        var warmed = 0;        // <- total successfully cached items
+        var page   = 0;
+
         while (true)
         {
             var batch = await db.Articles.AsNoTracking()
@@ -84,26 +85,32 @@ public sealed class RedisArticleCache : IArticleCache
 
             if (batch.Count == 0) break;
 
-            // store each with TTL
-            var tasks = batch
+            // write each article with TTL
+            Task<bool>[] setTasks = batch
                 .Select(dto =>
                 {
                     var json = JsonSerializer.Serialize(dto, JsonOpts);
                     return _database.StringSetAsync(KeyById(dto.Id), json, _options.ArticleTtl);
                 })
-                .ToArray();                          
+                .ToArray();
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(setTasks);
 
-            // warm index (for ops/demo) – use the array overload explicitly
+            // count only successful writes
+            warmed += setTasks.Count(t => t.Result);
+
+            // warm the index (for ops/demo)
             RedisValue[] ids = batch.Select(b => (RedisValue)b.Id).ToArray();
             _ = await _database.SetAddAsync(KeyWarmIndex(), ids);
 
             page++;
         }
 
-        // Store timestamp for monitoring
-        await _database.StringSetAsync($"{_options.KeyPrefix}:batch_last_run_ts", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        // store timestamp for monitoring
+        await _database.StringSetAsync($"{_options.KeyPrefix}:batch_last_run_ts",
+            DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+        return warmed;  // <- number of items successfully cached
     }
     
 }
