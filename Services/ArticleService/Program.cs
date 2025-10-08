@@ -1,10 +1,11 @@
+using ArticleService.Api.Caching;
 using ArticleService.Application.Interfaces;
 using ArticleService.Infrastructure;
+using ArticleService.Infrastructure.Caching;
 using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
-using ArticleService.Infrastructure.Caching;
-using Serilog;
 using Monitoring;
+using Serilog;
 
 namespace ArticleService
 {
@@ -36,12 +37,21 @@ namespace ArticleService
                 o.UseSqlServer(cs, sql => sql.EnableRetryOnFailure());
             });
 
+            /// <summary>
+            /// Configures caching for the ArticleService:
+            /// - Sets up StackExchange.Redis using settings from Docker compose configuration.
+            /// - Registers ArticleCache for DI via IArticleCache.
+            /// - Binds CacheRefreshOptions to configuration section in Docker compose.
+            /// - Adds a background service to periodically fill/refresh cached data.
+            /// </summary>
             builder.Services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
             });
-
             builder.Services.AddScoped<IArticleCache, ArticleCache>();
+            builder.Services.Configure<CacheRefreshOptions>(builder.Configuration.GetSection("CacheRefresh"));
+            builder.Services.AddHostedService<CacheRefreshService>();
+
 
             // Register RabbitMQ consumer
             builder.Services.AddHostedService<ArticleQueueConsumerRabbit>();   // runs as background worker

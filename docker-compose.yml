@@ -239,6 +239,10 @@ services:
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
       Redis__Configuration: "redis:6379,abortConnect=false"
+      CacheRefresh__Enabled: true
+      CacheRefresh__WindowDays: 14
+      CacheRefresh__FrequencyHours: 24
+      CacheRefresh__MaxRows: 5000
     depends_on:
       # articles-africa-db:
       #   condition: service_healthy
