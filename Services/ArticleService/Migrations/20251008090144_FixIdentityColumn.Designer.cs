@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArticleService.Migrations
 {
     [DbContext(typeof(ArticleDbContext))]
-    [Migration("20251007010825_MakeIdIdentity")]
-    partial class MakeIdIdentity
+    [Migration("20251008090144_FixIdentityColumn")]
+    partial class FixIdentityColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
