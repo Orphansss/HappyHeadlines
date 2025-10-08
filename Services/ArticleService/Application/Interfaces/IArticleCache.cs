@@ -13,5 +13,5 @@ public interface IArticleCache
 
     // Batch helpers
     Task RefreshSingleAsync(int id, CancellationToken ct = default);
-    Task WarmLast14DaysAsync(CancellationToken ct = default);
+    Task<int> WarmLast14DaysAsync(CancellationToken ct = default);
 }
