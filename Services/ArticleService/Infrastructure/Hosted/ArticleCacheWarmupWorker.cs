@@ -19,17 +19,26 @@ public sealed class ArticleCacheWarmupWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            var now = DateTimeOffset.UtcNow;
+            var from = now.AddDays(-14);
+
             try
             {
+                Log.Information("ArticleBatch: start range=[{From:u}, {To:u}]", from, now);
+
                 var started = DateTimeOffset.UtcNow;
-                await _articleCache.WarmLast14DaysAsync(stoppingToken);
+                // Make WarmLast14DaysAsync return an int (count of items warmed)
+                var count = await _articleCache.WarmLast14DaysAsync(stoppingToken);
                 var took = DateTimeOffset.UtcNow - started;
-                Log.Information("Article warmup completed in {Durationms} ms", took.TotalMilliseconds);
+
+                Log.Information("ArticleBatch: prefilled {PrefilledCount} items in {DurationMs} ms",
+                    count, took.TotalMilliseconds);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Warning(e, "Article warmup failed...");
+                Log.Warning(ex, "ArticleBatch: warmup failed");
             }
+
             await Task.Delay(_options.WarmInterval, stoppingToken);
         }
     }
