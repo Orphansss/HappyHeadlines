@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace ArticleService.Infrastructure.Data;
+namespace ArticleService.Infrastructure;
 
 public static class RegionDbContextFactory
 {

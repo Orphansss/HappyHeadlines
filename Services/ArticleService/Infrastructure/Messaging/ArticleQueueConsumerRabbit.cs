@@ -1,6 +1,6 @@
 using ArticleService.Application.Interfaces;
 using ArticleService.Domain.Entities;
-using ArticleService.Infrastructure.Data;
+using ArticleService.Infrastructure;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Serilog;
