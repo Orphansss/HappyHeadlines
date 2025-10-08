@@ -9,6 +9,7 @@ using Serilog;
 using Monitoring;
 using Prometheus;
 using StackExchange.Redis;
+using Scrutor;
 
 namespace ArticleService
 {
@@ -25,27 +26,6 @@ namespace ArticleService
 
             // Registrér vores RegionResolver (finder den rigtige connection pr. request)
             builder.Services.AddScoped<IRegionResolver, RegionResolver>();
-            
-            // Redis
-            // Read and validate (fail fast if missing)
-            var redisConnString = builder.Configuration.GetConnectionString("Redis")
-                                  ?? throw new InvalidOperationException("Missing connection string: 'Redis'");
-
-            // Distributed cache (IDistributedCache)
-            builder.Services.AddStackExchangeRedisCache(o =>
-            {
-                o.Configuration = redisConnString;
-            });
-
-            // Redis multiplexer for LRU ZSET ops
-            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-            {
-                var cfg = ConfigurationOptions.Parse(redisConnString);
-                cfg.AbortOnConnectFail = false; // don’t crash on cold start
-                cfg.ConnectRetry       = 3;
-                cfg.ConnectTimeout     = 3000;
-                return ConnectionMultiplexer.Connect(cfg);
-            });
             
             // Caching services
             builder.Services.AddSingleton(new ArticleCacheOptions());
@@ -78,10 +58,31 @@ namespace ArticleService
                                builder.Configuration.GetConnectionString("Global"),
                     sql => sql.EnableRetryOnFailure()));
 
+            // Redis
+            // Read and validate (fail fast if missing)
+            var redisConnString = builder.Configuration.GetConnectionString("Redis")
+                                  ?? throw new InvalidOperationException("Missing connection string: 'Redis'");
+
+            // Distributed cache (IDistributedCache)
+            builder.Services.AddStackExchangeRedisCache(o =>
+            {
+                o.Configuration = redisConnString;
+            });
+
+            // Redis multiplexer for LRU ZSET ops
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                var cfg = ConfigurationOptions.Parse(redisConnString);
+                cfg.AbortOnConnectFail = false; // don’t crash on cold start
+                cfg.ConnectRetry       = 3;
+                cfg.ConnectTimeout     = 3000;
+                return ConnectionMultiplexer.Connect(cfg);
+            });
             
             // Register RabbitMQ consumer
+            builder.Services.Configure<RabbitOptions>(builder.Configuration.GetSection("Rabbit"));
+
             builder.Services.AddHostedService<ArticleQueueConsumerRabbit>();   // runs as background worker
-            builder.Services.AddScoped<IArticleQueueConsumer, ArticleQueueConsumerRabbit>(); 
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -94,20 +95,30 @@ namespace ArticleService
             {
                 var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var allConns = cfg.GetSection("ConnectionStrings").GetChildren();
-
                 foreach (var c in allConns)
                 {
-                    var name = c.Key;     // fx "Europe"
-                    var cs = c.Value;   // selve connection string'en
+                    var name = c.Key;
+                    var cs = c.Value;
                     if (string.IsNullOrWhiteSpace(cs)) continue;
 
+                    // Skip non-SQL connections like Redis
+                    if (!cs.Contains("Server=", StringComparison.OrdinalIgnoreCase) &&
+                        !cs.Contains("Data Source=", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    Console.WriteLine($"[Migrate] {name}");
                     var opts = new DbContextOptionsBuilder<ArticleDbContext>()
                         .UseSqlServer(cs, sql => sql.EnableRetryOnFailure())
                         .Options;
 
-                    Console.WriteLine($"[Migrate] {name}");
                     using var db = new ArticleDbContext(opts);
-                    db.Database.Migrate();
+                    try { db.Database.Migrate(); }
+                    catch (Exception ex)
+                    {
+                        // Don’t crash whole app; log and continue
+                        Console.WriteLine($"[Migrate] {name} failed: {ex.Message}");
+                        throw; // or keep going if you prefer
+                    }
                 }
             }
 
