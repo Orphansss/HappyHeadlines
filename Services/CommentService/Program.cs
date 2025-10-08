@@ -1,11 +1,11 @@
-﻿using CommentService.Data;
-using CommentService.Interfaces;
-using CommentService.Profanity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
 using Serilog;
 using Monitoring;
+using CommentService.Infrastructure;
+using CommentService.Application.Interfaces;
+using CommentService.Infrastructure.Profanity;
 
 namespace CommentService
 {
@@ -19,7 +19,7 @@ namespace CommentService
 
             var config = builder.Configuration;
             
-            builder.Services.AddScoped<ICommentService, Services.CommentService>();
+            builder.Services.AddScoped<ICommentService, Application.Services.CommentService>();
             builder.Services.AddDbContext<CommentDbContext>(o =>
                 o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
             

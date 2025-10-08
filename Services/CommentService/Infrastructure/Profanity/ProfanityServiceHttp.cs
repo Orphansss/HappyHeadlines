@@ -1,7 +1,7 @@
-using CommentService.Interfaces;
-using CommentService.Profanity.Dtos;
+using CommentService.Application.Interfaces;
+using CommentService.Infrastructure.Profanity.Dtos;
 
-namespace CommentService.Profanity;
+namespace CommentService.Infrastructure.Profanity;
 
 public class ProfanityServiceHttp : IProfanityService
 {

@@ -1,9 +1,9 @@
 using CommentService.Exceptions;
-using CommentService.Models;
-using CommentService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using CommentService.Domain.Entities;
+using CommentService.Application.Interfaces;
 
-namespace CommentService.Controllers;
+namespace CommentService.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

@@ -1,3 +1,3 @@
-namespace CommentService.Profanity.Dtos;
+namespace CommentService.Infrastructure.Profanity.Dtos;
 
 public record FilterResultDto(string CleanedText, bool HadProfanity);

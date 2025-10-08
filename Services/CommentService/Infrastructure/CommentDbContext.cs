@@ -1,13 +1,11 @@
-using CommentService.Models;
+using CommentService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CommentService.Data;
+namespace CommentService.Infrastructure;
 
 public class CommentDbContext : DbContext
 {
-    public CommentDbContext(DbContextOptions<CommentDbContext> options) : base(options)
-    {
-    }
+    public CommentDbContext(DbContextOptions<CommentDbContext> options) : base(options) { }
     
     public DbSet<Comment> Comments => Set<Comment>();
     

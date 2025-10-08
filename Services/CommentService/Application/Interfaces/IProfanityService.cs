@@ -1,6 +1,6 @@
-using CommentService.Profanity.Dtos;
+using CommentService.Infrastructure.Profanity.Dtos;
 
-namespace CommentService.Interfaces;
+namespace CommentService.Application.Interfaces;
 
 public interface IProfanityService
 {

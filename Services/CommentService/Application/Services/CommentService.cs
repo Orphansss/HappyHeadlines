@@ -1,12 +1,12 @@
-using CommentService.Data;
-using CommentService.Models;
-using CommentService.Interfaces;
 using CommentService.Exceptions;
-using CommentService.Profanity.Dtos;    
 using Microsoft.EntityFrameworkCore;
-using Polly.CircuitBreaker;             
+using Polly.CircuitBreaker;
+using CommentService.Domain.Entities;
+using CommentService.Infrastructure;
+using CommentService.Application.Interfaces;
+using CommentService.Infrastructure.Profanity.Dtos;
 
-namespace CommentService.Services
+namespace CommentService.Application.Services
 {
     public class CommentService : ICommentService
     {

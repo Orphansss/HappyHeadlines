@@ -1,6 +1,6 @@
-using CommentService.Models;
+using CommentService.Domain.Entities;
 
-namespace CommentService.Interfaces
+namespace CommentService.Application.Interfaces
 {
     public interface ICommentService
     {
