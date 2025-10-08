@@ -1,65 +1,83 @@
-using Prometheus;  
+using Prometheus;
 
 namespace Monitoring;
 
+public static class CacheLayers
+{
+    public const string Articles = "articles";
+    public const string Comments = "comments";
+}
+
 /// <summary>
-/// Centralized, tiny helper around Prometheus metrics for our caches.
-/// Services call these methods at specific points (cache lookup, hit, eviction, batch complete)
-/// and the prometheus-net library handles the rest. Values are scraped via GET /metrics.
+/// Centralized helper around Prometheus metrics for cache layers.
 /// </summary>
 public static class CacheMetrics
 {
-    // COUNTER: how many times we *attempted* to read from a cache.
-    // Label `layer` lets us separate "comments" vs "articles" in one metric.
+    // Cache tries
     private static readonly Counter CacheRequests = Metrics.CreateCounter(
         "cache_requests_total",
         "Total number of cache lookups (read attempts).",
         new CounterConfiguration { LabelNames = new[] { "layer" } });
 
-    // COUNTER: how many times the cache actually returned a value (a hit).
-    // Hit ratio = hits / requests (we’ll compute that in Grafana later).
+    // Cache hits
     private static readonly Counter CacheHits = Metrics.CreateCounter(
         "cache_hits_total",
         "Total number of cache hits.",
         new CounterConfiguration { LabelNames = new[] { "layer" } });
 
-    // COUNTER: number of LRU evictions we performed (only relevant to CommentCache).
+    // Cache misses
+    private static readonly Counter CacheMisses = Metrics.CreateCounter(
+        "cache_misses_total",
+        "Total number of cache misses.",
+        new CounterConfiguration { LabelNames = new[] { "layer" } });
+
+    // LRU evictions (comments only)
     private static readonly Counter CacheEvictions = Metrics.CreateCounter(
         "cache_evictions_total",
         "Total number of cache evictions (LRU).",
         new CounterConfiguration { LabelNames = new[] { "layer" } });
 
-    // GAUGE: a value that can go up/down. We store the *timestamp* (as seconds since epoch)
-    // of the last successful Article batch refresh. Useful to see if the worker runs.
-    private static readonly Gauge BatchLastRunTs = Metrics.CreateGauge(
+    // Batch last run (you already had this)
+    private static readonly Gauge BatchLastRunTsCompat = Metrics.CreateGauge(
         "batch_refresh_last_run_timestamp",
         "Unix timestamp of the last successful batch refresh.",
         new GaugeConfiguration { LabelNames = new[] { "layer" } });
 
-    // --- Public methods the services call ---
+    // Alias with more common name used in dashboards
+    private static readonly Gauge BatchLastRunTs = Metrics.CreateGauge(
+        "batch_last_run_timestamp",
+        "Unix timestamp of the last successful batch refresh.",
+        new GaugeConfiguration { LabelNames = new[] { "layer" } });
 
-    /// <summary>
-    /// Call once right before you try to read from the cache.
-    /// Example: CacheMetrics.Request("comments");
-    /// </summary>
+    // Batch duration histogram
+    private static readonly Histogram BatchDuration = Metrics.CreateHistogram(
+        "batch_refresh_duration_seconds",
+        "Duration of the batch prefill.",
+        new HistogramConfiguration
+        {
+            LabelNames = new[] { "layer" },
+            Buckets = Histogram.ExponentialBuckets(0.05, 2, 10) // 50ms → ~25s
+        });
+
+    // --- Public API ---
+
     public static void Request(string layer) => CacheRequests.WithLabels(layer).Inc();
-
-    /// <summary>
-    /// Call only if the cache lookup returned data (a hit).
-    /// Example: CacheMetrics.Hit("comments");
-    /// </summary>
     public static void Hit(string layer)     => CacheHits.WithLabels(layer).Inc();
-
-    /// <summary>
-    /// Call when you evict an entry due to LRU (CommentCache only).
-    /// Example: CacheMetrics.Evicted("comments");
-    /// </summary>
+    public static void Miss(string layer)    => CacheMisses.WithLabels(layer).Inc();
     public static void Evicted(string layer) => CacheEvictions.WithLabels(layer).Inc();
 
-    /// <summary>
-    /// Call at the end of a successful batch prefill run (ArticleCache only).
-    /// Example: CacheMetrics.SetBatchLastRun("articles", DateTimeOffset.UtcNow);
-    /// </summary>
+    /// <summary>Call at the end of a successful batch run.</summary>
     public static void SetBatchLastRun(string layer, DateTimeOffset when)
-        => BatchLastRunTs.WithLabels(layer).Set(when.ToUnixTimeSeconds());
+    {
+        var ts = when.ToUnixTimeSeconds();
+        BatchLastRunTsCompat.WithLabels(layer).Set(ts);
+        BatchLastRunTs.WithLabels(layer).Set(ts);
+    }
+
+    /// <summary>
+    /// Measure batch duration with a using-pattern:
+    /// using var t = CacheMetrics.MeasureBatch(CacheLayers.Articles); ... 
+    /// </summary>
+    public static IDisposable MeasureBatch(string layer) =>
+        BatchDuration.WithLabels(layer).NewTimer();
 }
