@@ -3,6 +3,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using ArticleService.Domain.Entities;
 using ArticleService.Application.Interfaces;
 using StackExchange.Redis;
+using ArticleService.Infrastructure.Caching;
 
 namespace ArticleService.Infrastructure.Caching;
 
@@ -28,7 +29,17 @@ public sealed class ArticleCache(IDistributedCache cache) : IArticleCache
     /// </summary>
     public async Task<Article?> GetByIdAsync(int id, CancellationToken ct = default)
     {
+        const string layer = "article";
+        const string op = "GetById";
+
         var bytes = await cache.GetAsync(KeyById(id), ct);
+        if (bytes is null)
+        {
+            CacheMetrics.Misses.WithLabels(layer, op).Inc();
+            return null;
+        }
+
+        CacheMetrics.Hits.WithLabels(layer, op).Inc();
         return bytes is null ? null : JsonSerializer.Deserialize<Article>(bytes, _json);
     }
 

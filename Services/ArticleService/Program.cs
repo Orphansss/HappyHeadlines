@@ -5,6 +5,7 @@ using ArticleService.Infrastructure.Caching;
 using ArticleService.Infrastructure.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Monitoring;
+using Prometheus;
 using Serilog;
 
 namespace ArticleService
@@ -84,6 +85,9 @@ namespace ArticleService
                     db.Database.Migrate();
                 }
             }
+
+            app.UseMetricServer("/metrics");
+            app.UseHttpMetrics();
 
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
             app.MapGet("/", () => Results.Redirect("/swagger"));

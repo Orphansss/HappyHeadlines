@@ -238,7 +238,7 @@ services:
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
-      Redis__Configuration: "redis:6379,abortConnect=false"
+      Redis__Configuration: "redis-articles:6379,abortConnect=false"
       CacheRefresh__Enabled: true
       CacheRefresh__WindowDays: 14
       CacheRefresh__FrequencyHours: 24
@@ -274,6 +274,7 @@ services:
       PROFANITY_BASEURL: "http://profanity-service:8080/"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
+      Redis__Configuration: "redis-comments:6379,abortConnect=false"
     depends_on:
       comments-db:
         condition: service_healthy
@@ -400,11 +401,27 @@ services:
       - "4317:4317"    # OTLP gRPC
     <<: [*restart]
 
-  redis:
-    image: redis:8.2
+ # ---------- Redis (caching) ----------
+  redis-articles:
+   image: redis:8.2
+   command: ["redis-server","--maxmemory","256mb","--maxmemory-policy","allkeys-lru"]
+   ports: ["6379:6379"]
+   <<: [*restart]
+
+  redis-comments:
+   image: redis:8.2
+   command: ["redis-server","--maxmemory","256mb","--maxmemory-policy","allkeys-lru"]
+   ports: ["6380:6379"]
+   <<: [*restart]
+
+ # ---------- prometheus (Metrics) ----------
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "6379:6379"
-    <<: [*restart]
+      - "9090:9090"
+
 
 volumes:
   # mssql-europe:

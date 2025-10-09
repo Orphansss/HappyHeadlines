@@ -29,7 +29,7 @@ public sealed class CacheRefreshService : BackgroundService
     {
         if (!_opt.Enabled)
         {
-            Log.Information("Cache prewarm is disabled.");
+            Log.Information("Batch Refresh is disabled.");
             return;
         }
 

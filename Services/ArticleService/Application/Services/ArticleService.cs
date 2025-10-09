@@ -47,6 +47,9 @@ public sealed class ArticleService(ArticleDbContext db, IArticleCache cache) : I
             return cached;
         }
 
+        Log.Information("Cache miss for ArticleId: {ArticleId}", id);
+
+
         //If cache miss, fetch from db
         var existing = await db.Articles.FindAsync([id], ct);
         return existing;
