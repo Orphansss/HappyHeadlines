@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
 using Prometheus;
+using Serilog.Events;
 using StackExchange.Redis;
-using Scrutor;
 
 namespace ArticleService
 {
@@ -34,7 +34,7 @@ namespace ArticleService
             // Inner service
             builder.Services.AddScoped<IArticleService, Application.Services.ArticleService>();
 
-            // Apply the decorator pattern with Scrutor
+            // Apply the decorator pattern
             builder.Services.Decorate<IArticleService, ArticleServiceCachingDecorator>();
 
             // Warmup worker
@@ -122,6 +122,14 @@ namespace ArticleService
                 }
             }
 
+            app.UseSerilogRequestLogging(o =>
+            {
+                o.GetLevel = (http, elapsed, ex) =>
+                    http.Request.Path.StartsWithSegments("/metrics", StringComparison.OrdinalIgnoreCase)
+                        ? LogEventLevel.Debug   // too chatty -> drop (assuming sinks start at Information)
+                        : LogEventLevel.Information;
+            });
+            
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
             app.MapGet("/", () => Results.Redirect("/swagger"));
 
@@ -132,16 +140,17 @@ namespace ArticleService
                 app.UseSwaggerUI();
             }
             
-            // Prometheus HTTP metrics (place before handlers so it observes them)
-            app.UseHttpMetrics();
-            // Expose /metrics endpoint
-            app.MapMetrics();
+            builder.Services.AddHttpContextAccessor();
+            app.UseHttpMetrics();     // request duration/status, etc., via prometheus-net
+            app.MapMetrics("/metrics"); // exposes prometheus-net registry on /metrics
+            _ = typeof(Monitoring.CacheMetrics); // registers your custom counters
             
             app.MapControllers();
 
             // add traceId into all logs + request logging
             app.UseTraceIdEnricher();
             app.UseSerilogRequestLogging();
+            
             
             app.Run();
         }
