@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CommentService.Application.Interfaces;
+using CommentService.Infrastructure;
+using CommentService.Infrastructure.Caching;
+using CommentService.Infrastructure.Profanity;
+using Microsoft.EntityFrameworkCore;
+using Monitoring;
 using Polly;
 using Polly.Extensions.Http;
 using Serilog;
-using Monitoring;
-using CommentService.Infrastructure;
-using CommentService.Application.Interfaces;
-using CommentService.Infrastructure.Profanity;
+using StackExchange.Redis;
 
 namespace CommentService
 {
@@ -22,7 +24,21 @@ namespace CommentService
             builder.Services.AddScoped<ICommentService, Application.Services.CommentService>();
             builder.Services.AddDbContext<CommentDbContext>(o =>
                 o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
-            
+
+            /// <summary>
+            /// Configures caching for the ArticleService:
+            /// - Sets up StackExchange.Redis using settings from Docker compose configuration.
+            /// - Registers ArticleCache for DI via IArticleCache.
+            /// </summary>
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetSection("Redis")["Configuration"];
+            });
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+                ConnectionMultiplexer.Connect(builder.Configuration.GetSection("Redis")["Configuration"]));
+
+            builder.Services.AddScoped<ICommentCache, CommentCache>();
+
             // 1) Create a single, shared breaker instance
             var sharedBreaker = HttpPolicyExtensions
                 .HandleTransientHttpError()
