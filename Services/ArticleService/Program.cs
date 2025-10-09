@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Monitoring;
 using Prometheus;
-using Serilog.Events;
 using StackExchange.Redis;
 
 namespace ArticleService
@@ -121,14 +120,6 @@ namespace ArticleService
                     }
                 }
             }
-
-            app.UseSerilogRequestLogging(o =>
-            {
-                o.GetLevel = (http, elapsed, ex) =>
-                    http.Request.Path.StartsWithSegments("/metrics", StringComparison.OrdinalIgnoreCase)
-                        ? LogEventLevel.Debug   // too chatty -> drop (assuming sinks start at Information)
-                        : LogEventLevel.Information;
-            });
             
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
             app.MapGet("/", () => Results.Redirect("/swagger"));
@@ -140,7 +131,6 @@ namespace ArticleService
                 app.UseSwaggerUI();
             }
             
-            builder.Services.AddHttpContextAccessor();
             app.UseHttpMetrics();     // request duration/status, etc., via prometheus-net
             app.MapMetrics("/metrics"); // exposes prometheus-net registry on /metrics
             _ = typeof(Monitoring.CacheMetrics); // registers your custom counters
@@ -150,7 +140,6 @@ namespace ArticleService
             // add traceId into all logs + request logging
             app.UseTraceIdEnricher();
             app.UseSerilogRequestLogging();
-            
             
             app.Run();
         }
