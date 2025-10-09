@@ -488,3 +488,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+/.vs/HappyHeadlines/v17/.wsuo
+/.vs/HappyHeadlines/v17/DocumentLayout.backup.json
+/.vs/HappyHeadlines/v17/DocumentLayout.json
+/.vs/slnx.sqlite
+/.vs/VSWorkspaceState.json
+/Services/ArticleService/.vs/ArticleService/v17/DocumentLayout.json
+/Services/ArticleService/.vs/ArticleService/FileContentIndex/42b46340-3316-4dfa-8ced-c66e96d01593.vsidx
+/Services/ArticleService/.vs/ArticleService/v17/.wsuo
