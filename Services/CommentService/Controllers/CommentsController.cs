@@ -18,8 +18,6 @@ public class CommentsController : ControllerBase
         _comments = comments;
     }
 
-    // Article-scoped endpoints (cache targets)
-
     // GET /api/articles/{articleId}/comments
     [HttpGet("~/api/articles/{articleId:int}/comments")]
     public async Task<ActionResult<IEnumerable<CommentResponse>>> GetCommentsForArticle(
