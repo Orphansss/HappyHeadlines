@@ -13,6 +13,8 @@ public class CachedCommentService : ICommentService
     private readonly ICommentService _decorated;
     private readonly IDistributedCache _cache;
     private readonly IConnectionMultiplexer _redis;
+    
+    private const string Layer = CacheLayers.Comments; // for metrics
 
     // Set time-to-live: LRU will constrain memory by latest accessed articles (30)
     private static readonly DistributedCacheEntryOptions CommentTtl =
@@ -33,8 +35,8 @@ public class CachedCommentService : ICommentService
     {
         var key = CacheKeys.CommentsByArticle(articleId); //  "hh:v1:comments:article:{articleId}";
 
-        // METRIC: cache lookup attempts
-        CacheMetrics.Request("comments");
+        // METRICS cache attempts
+        CacheMetrics.Request(layer: Layer);
 
         try
         {
@@ -44,10 +46,10 @@ public class CachedCommentService : ICommentService
             {
                 var comments = JsonConvert.DeserializeObject<List<Comment>>(cached)!;
 
-                // METRIC: cache returned a value
-                CacheMetrics.Hit("comments");
+                // METRICS cache hit
+                CacheMetrics.Hit(layer: Layer);
 
-                Log.Debug("CommentCache HIT for article {ArticleId} key {Key} count {Count}",
+                Log.Information("CommentCache HIT for article {ArticleId} key {Key} count {Count}",
                     articleId, key, comments.Count);
 
                 await BumpLruAsync(articleId);
@@ -62,6 +64,9 @@ public class CachedCommentService : ICommentService
             Log.Warning(ex, "CommentCache ERROR on read for article {ArticleId} key {Key}. Falling back to DB.",
                 articleId, key);
         }
+        
+        // METRICS cache miss
+        CacheMetrics.Miss(layer: Layer);
         
         // MISS or cache error, go to DB
         var fromDb = (await _decorated.GetCommentsForArticle(articleId, ct)).ToList();
@@ -94,12 +99,12 @@ public class CachedCommentService : ICommentService
                 articleId, key, fromDb.Count);
             
             await BumpLruAsync(articleId);
+            var evicted = await EnforceLruLimitAsync(exceptArticleId: articleId);
 
-            var evicted = await EnforceLruLimitAsync();
             if (evicted > 0)
             {
-                // METRIC: count LRU cleanups
-                CacheMetrics.Evicted("comments");
+                // METRICS count LRU cleanups
+                CacheMetrics.Evicted(layer: Layer, count: (int)evicted);
                 Log.Information("CommentCache LRU evicted {EvictedCount} article thread(s)", evicted);
             }
         }
@@ -107,7 +112,6 @@ public class CachedCommentService : ICommentService
         {
             Log.Warning(ex, "CommentCache ERROR on write for article {ArticleId} key {Key}", articleId, key);
         }
-
         return fromDb;
     }
 
@@ -142,14 +146,14 @@ public class CachedCommentService : ICommentService
                 // If not present in the cache, do nothing (it will be filled on next read)
                 Log.Information("CommentCache MISS for article {ArticleId} key {Key}", comment.ArticleId, key);
             }
-
+            
             await BumpLruAsync(created.ArticleId);
+            var evicted = await EnforceLruLimitAsync(exceptArticleId: created.ArticleId);
 
-            var evicted = await EnforceLruLimitAsync();
             if (evicted > 0)
             {
-                // METRIC: count LRU cleanups
-                CacheMetrics.Evicted("comments");
+                // METRICS count LRU cleanups
+                CacheMetrics.Evicted(layer: Layer, count: (int)evicted);
                 Log.Information("CommentCache LRU evicted {EvictedCount} article thread(s) after create", evicted);
             }
         }
@@ -225,44 +229,50 @@ public class CachedCommentService : ICommentService
             var db = _redis.GetDatabase();
             var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             await db.SortedSetAddAsync(CacheKeys.CommentsLru, articleId, now);
-            Log.Debug("CommentCache LRU bump for article {ArticleId}", articleId);
+            Log.Information("CommentCache LRU bump for article {ArticleId}", articleId);
         }
         catch (Exception ex)
         {
             Log.Warning(ex, "CommentCache ERROR bumping LRU for article {ArticleId}", articleId);
         }
     }
-
+    
     // Ensure we keep at most 30 article threads in cache
-    private async Task<long> EnforceLruLimitAsync()
+    private async Task<long> EnforceLruLimitAsync(int? exceptArticleId = null)
     {
         try
         {
             var db = _redis.GetDatabase();
-            
-            // Count members in the ZSET
+
             long count = await db.SortedSetLengthAsync(CacheKeys.CommentsLru);
             if (count <= 30) return 0;
 
             long toRemove = count - 30;
+
+            // Oldest first (ASC) = least recently used
             // victims: the list of oldest articleIds that we plan to remove
             var victims = await db.SortedSetRangeByRankAsync(
                 CacheKeys.CommentsLru, 0, toRemove - 1, Order.Ascending);
-            
-            // Foreach vimtim articleId, delete it's comment cache key
+
             long evicted = 0;
+            // Foreach vimtim articleId, delete it's comment cache key
             foreach (var victim in victims)
             {
-                if (int.TryParse(victim!, out var articleId))
+                // victim is a RedisValue; compare as string to be safe
+                var victimStr = (string)victim;
+                if (exceptArticleId.HasValue && victimStr == exceptArticleId.Value.ToString())
+                    continue; // don't evict the one we just touched
+
+                if (int.TryParse(victimStr, out var victimId))
                 {
-                    await _cache.RemoveAsync(CacheKeys.CommentsByArticle(articleId));
+                    await _cache.RemoveAsync(CacheKeys.CommentsByArticle(victimId));
                     evicted++;
                 }
             }
-            // Delete oldest members from the ZSET
-            await db.SortedSetRemoveRangeByRankAsync(
-                CacheKeys.CommentsLru, 0, toRemove - 1);
-            
+
+            // Remove the same rank range from the LRU set as well
+            await db.SortedSetRemoveRangeByRankAsync(CacheKeys.CommentsLru, 0, toRemove - 1);
+
             // evicted: a counter of how many we actually removed from the comment cache
             return evicted;
         }
@@ -272,4 +282,5 @@ public class CachedCommentService : ICommentService
             return 0;
         }
     }
+
 }
