@@ -438,6 +438,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
 
 volumes:
   # mssql-europe:
@@ -453,3 +455,4 @@ volumes:
   mssql-draft:
   seq-data:
   redis-data:
+  grafana-data: { }
