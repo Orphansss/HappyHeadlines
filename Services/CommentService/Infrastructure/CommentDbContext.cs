@@ -19,6 +19,7 @@ public class CommentDbContext : DbContext
             e.Property(x => x.PublishedAt).IsRequired();
             e.HasIndex(x => x.PublishedAt);
             e.HasIndex(x => x.AuthorId);
+            e.HasIndex(x => x.ArticleId);
         });
     }
 }
