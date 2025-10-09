@@ -418,6 +418,26 @@ services:
     ports:
       - "6379:6379"
     <<: [ *healthcheck_redis, *restart ]
+    
+  # ---------- Prometheus ----------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./Infrastructure/Monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  # ---------- Grafana ----------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 
 volumes:
   # mssql-europe:
