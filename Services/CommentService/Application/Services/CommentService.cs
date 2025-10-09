@@ -5,26 +5,19 @@ using CommentService.Domain.Entities;
 using CommentService.Infrastructure;
 using CommentService.Application.Interfaces;
 using CommentService.Infrastructure.Profanity.Dtos;
+using Serilog;
 
 namespace CommentService.Application.Services
 {
-    public class CommentService : ICommentService
+    public class CommentService(CommentDbContext db, IProfanityService profanity, ICommentCache cache) : ICommentService
     {
-        private readonly CommentDbContext _db;
-        private readonly IProfanityService _profanity;
-
-        public CommentService(CommentDbContext db, IProfanityService profanity)
-        {
-            _db = db;
-            _profanity = profanity;
-        }
 
         public async Task<Comment> CreateComment(Comment comment, CancellationToken ct = default)
         {
             // 1) Call ProfanityService (protected by Retry + CircuitBreaker)
             try
             {
-                var result = await _profanity.FilterAsync(new FilterRequestDto(comment.Content), ct);
+                var result = await profanity.FilterAsync(new FilterRequestDto(comment.Content), ct);
                 comment.Content = result.CleanedText;     // overwrite with filtered text
             }
             catch (BrokenCircuitException ex)
@@ -44,35 +37,63 @@ namespace CommentService.Application.Services
             }
 
             // 2) Persist
-            _db.Comments.Add(comment);
-            await _db.SaveChangesAsync(ct);
+            db.Comments.Add(comment);
+            await db.SaveChangesAsync(ct);
+
             return comment;
         }
 
         public async Task<IEnumerable<Comment>> GetComments()
-            => await _db.Comments.ToListAsync();
+            => await db.Comments.ToListAsync();
 
-        public async Task<Comment?> GetCommentById(int id)
-            => await _db.Comments.FindAsync(id);
+        public async Task<Comment?> GetCommentById(int id, CancellationToken ct = default)
+        {
+            // Try to fetch from cache first
+            var cached = await cache.GetByIdAsync(id, ct);
+            if (cached is not null)
+            {
+                Log.Information("Cache hit for CommentId: {CommentId}", id);
+                return cached;
+            }
+
+            Log.Information("Cache miss for CommentId: {CommentId}", id);
+
+            // Miss: Try to fetch from DB
+            var existing = await db.Comments.FindAsync(id);
+            if (existing is null) return null;
+
+            // Fetch all comments for that article
+            var list = await db.Comments
+                .Where(c => c.ArticleId == existing.ArticleId)
+                .OrderByDescending(c => c.PublishedAt)
+                .ToListAsync(ct);
+
+            // Store all comments for that article in the cache
+            await cache.SetArticleCommentsAsync(existing.ArticleId, list, ct);
+
+            Log.Information("Filled Cache with {Count} comments from Article: {ArticleId}", list.Count, existing.ArticleId);
+            return existing;
+        }
+
 
         public async Task<Comment?> UpdateComment(int id, Comment comment, CancellationToken ct = default)
         {
-            var existing = await _db.Comments.FindAsync(id);
+            var existing = await db.Comments.FindAsync(id);
             if (existing == null) return null;
 
             existing.Content = comment.Content;
             existing.AuthorId  = comment.AuthorId;
-            await _db.SaveChangesAsync(ct);
+            await db.SaveChangesAsync(ct);
             return existing;
         }
 
         public async Task<bool> DeleteComment(int id, CancellationToken ct = default)
         {
-            var existing = await _db.Comments.FindAsync(id);
+            var existing = await db.Comments.FindAsync(id);
             if (existing == null) return false;
 
-            _db.Comments.Remove(existing);
-            await _db.SaveChangesAsync(ct);
+            db.Comments.Remove(existing);
+            await db.SaveChangesAsync(ct);
             return true;
         }
     }
