@@ -2,6 +2,7 @@ using System.Diagnostics;
 using ArticleService.Api.Contracts.Dtos;
 using ArticleService.Application.Interfaces;
 using ArticleService.Infrastructure.Caching;
+using Monitoring;
 using Serilog;
 
 namespace ArticleService.Application.Services.Decorators;
@@ -11,14 +12,26 @@ public sealed class ArticleServiceCachingDecorator : IArticleService
     private readonly IArticleService _decorated;
     private readonly IArticleCache _articleCache;
     private readonly ArticleCacheOptions _options;
+    private readonly IHttpContextAccessor _http;
 
 
-    public ArticleServiceCachingDecorator(IArticleService decorated, IArticleCache articleCache, ArticleCacheOptions options)
+    private const string Layer = CacheLayers.Articles; // for metrics
+
+    public ArticleServiceCachingDecorator(IArticleService decorated, IArticleCache articleCache, ArticleCacheOptions options, IHttpContextAccessor http)
     {
         _decorated = decorated;
         _articleCache = articleCache;
         _options = options;
+        _http = http;
     }
+    
+    private bool ShouldInstrument()
+    {
+        var ctx = _http.HttpContext;
+        return ctx != null &&
+               ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase);
+    }
+
 
     public async Task<ArticleResponse> CreateAsync(CreateArticleRequest input, CancellationToken ct = default)
     {
@@ -36,16 +49,25 @@ public sealed class ArticleServiceCachingDecorator : IArticleService
 
     public async Task<IReadOnlyList<ArticleResponse>> GetLatestAsync(int count, CancellationToken ct = default)
     {
+        var instrument = ShouldInstrument();
+        
         var ctx = Log.ForContext("Count", count)
             .ForContext("TraceId", Activity.Current?.TraceId.ToString());
+        
+        // METRICS cache attempt
+        if (instrument) CacheMetrics.Request(Layer);
         
         // HIT?
         var hit = await _articleCache.TryGetLatestAsync(count, ct);
         if (hit != null)
         {
+            if (instrument) CacheMetrics.Hit(Layer); // METRICS cache hit
             ctx.Information("ArticleCache: HIT latest");
             return hit;
         }
+        
+        // METRICS cache miss
+        if (instrument) CacheMetrics.Miss(Layer);
         
         // MISS -> go to DB -> set cache
         ctx.Information("ArticleCache: MISS latest (loading from DB)");
@@ -57,15 +79,24 @@ public sealed class ArticleServiceCachingDecorator : IArticleService
 
     public async Task<ArticleResponse?> GetByIdAsync(int id, CancellationToken ct = default)
     {
+        var instrument = ShouldInstrument();
+
         var ctx = Log.ForContext("ArticleId", id)
             .ForContext("TraceId", Activity.Current?.TraceId.ToString());
         
+        // METRICS cache attempt
+        if (instrument) CacheMetrics.Request(Layer);
+
         var cached = await _articleCache.TryGetByIdAsync(id, ct);
         if (cached != null) 
         {
+            if (instrument) CacheMetrics.Hit(layer: Layer); // METRICS cache hit
             ctx.Information("ArticleCache: HIT");
             return cached;
         }
+        
+        // METRICS cache miss
+        if (instrument) CacheMetrics.Miss(Layer);
         
         ctx.Information("ArticleCache: MISS (loading from DB)");
         var item = await _decorated.GetByIdAsync(id, ct);
