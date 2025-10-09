@@ -9,7 +9,6 @@ using Serilog;
 using Monitoring;
 using StackExchange.Redis;
 using Prometheus;
-using Serilog.Events;
 
 namespace CommentService
 {
@@ -90,14 +89,6 @@ namespace CommentService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
-            app.UseSerilogRequestLogging(o =>
-            {
-                o.GetLevel = (http, elapsed, ex) =>
-                    http.Request.Path.StartsWithSegments("/metrics", StringComparison.OrdinalIgnoreCase)
-                        ? LogEventLevel.Debug   // too chatty -> drop (assuming sinks start at Information)
-                        : LogEventLevel.Information;
-            });
             
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "comment-service" }));
 
