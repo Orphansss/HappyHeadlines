@@ -24,14 +24,14 @@ public sealed class ArticleCacheWarmupWorker : BackgroundService
 
             try
             {
-                Log.Information("ArticleBatch: start range=[{From:u}, {To:u}]", from, now);
+                Log.Information("ArticleCache (Batch): start range=[{From:u}, {To:u}]", from, now);
 
                 var started = DateTimeOffset.UtcNow;
                 // Make WarmLast14DaysAsync return an int (count of items warmed)
                 var count = await _articleCache.WarmLast14DaysAsync(stoppingToken);
                 var took = DateTimeOffset.UtcNow - started;
 
-                Log.Information("ArticleBatch: prefilled {PrefilledCount} items in {DurationMs} ms",
+                Log.Information("ArticleCache (Batch): prefilled {PrefilledCount} items in {DurationMs} ms",
                     count, took.TotalMilliseconds);
             }
             catch (Exception ex)
