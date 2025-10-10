@@ -39,6 +39,14 @@ x-healthcheck-tcp-8083: &healthcheck_tcp_8083
     timeout: 3s
     retries: 30
     start_period: 20s
+
+x-healthcheck-redis: &healthcheck_redis
+  healthcheck:
+    test: [ "CMD", "redis-cli", "ping" ]
+    interval: 10s
+    timeout: 5s
+    retries: 10
+    start_period: 5s
     
   # ---------- Reusable healthcheck for RabbitMQ ----------
 x-healthcheck-rabbit: &healthcheck_rabbit
@@ -218,6 +226,18 @@ services:
       - "14341:1433"
     <<: [*healthcheck_mssql, *restart]
 
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    <<: [ *healthcheck_redis, *restart ]
+
   # ---------- ArticleService ----------
   article-service:
     build:
@@ -238,6 +258,11 @@ services:
       ConnectionStrings__Default:      "Server=articles-global-db,1433;Database=ArticlesDb_Global;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
+
+      Redis__ConnectionString: "redis:6379,abortConnect=false"
+      Redis__InstanceName: "happy:articles:"
+      Cache__WarmupIntervalMinutes: "15"
+      Cache__WarmupWindowDays: "14"
     depends_on:
       # articles-africa-db:
       #   condition: service_healthy
@@ -254,6 +279,8 @@ services:
       # articles-antarctica-db:
       #   condition: service_healthy
       articles-global-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     <<: [*healthcheck_tcp_8080, *restart]
     # (No ports here – exposed via lb:8080)
@@ -394,6 +421,30 @@ services:
       - "16686:16686"  # Jaeger UI
       - "4317:4317"    # OTLP gRPC
     <<: [*restart]
+
+  # ---------- Prometheus (metrics collection) ----------
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./Infrastructure/Monitoring/prometheus:/etc/prometheus:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - article-service
+      # - comment-service    # uncomment when ready
+    <<: [*restart]  
+
+  # ---------- Grafana (metrics dashboard) ----------
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    <<: [*restart]   
 
 volumes:
   # mssql-europe:
