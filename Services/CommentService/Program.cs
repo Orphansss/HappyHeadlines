@@ -8,6 +8,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Serilog;
 using StackExchange.Redis;
+using Prometheus;
 
 namespace CommentService
 {
@@ -79,6 +80,9 @@ namespace CommentService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            app.UseMetricServer("/metrics");
+            app.UseHttpMetrics();
 
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "comment-service" }));
 

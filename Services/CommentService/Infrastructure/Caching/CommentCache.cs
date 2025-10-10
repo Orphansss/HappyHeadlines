@@ -2,6 +2,7 @@ using System.Text.Json;
 using CommentService.Application.Interfaces;
 using CommentService.Domain.Entities;
 using StackExchange.Redis;
+using CommentService.Infrastructure.Caching;
 
 namespace CommentService.Infrastructure.Caching;
 
@@ -43,12 +44,24 @@ public class CommentCache : ICommentCache
     /// </summary>
     public async Task<Comment?> GetByIdAsync(int id, CancellationToken ct = default)
     {
+        const string layer = "article";
+        const string op = "GetById";
+
         var json = await _db.StringGetAsync(KeyItem(id));
-        if (json.IsNullOrEmpty) return null;
+        if (json.IsNullOrEmpty)
+        {
+            CacheMetrics.Misses.WithLabels(layer, op).Inc();
+            return null;
+        }
 
         var comment = JsonSerializer.Deserialize<Comment>(json!, _json);
-        if (comment is null) return null;
+        if (comment is null)
+        {
+            CacheMetrics.Misses.WithLabels(layer, op).Inc();
+            return null;
+        }
 
+        CacheMetrics.Hits.WithLabels(layer, op).Inc();
         await UpdatedLRUAsync(comment.ArticleId);
 
         return comment;

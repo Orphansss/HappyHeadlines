@@ -1,6 +1,6 @@
 using Prometheus;
 
-namespace ArticleService.Infrastructure.Caching;
+namespace CommentService.Infrastructure.Caching;
 
 public static class CacheMetrics
 {
