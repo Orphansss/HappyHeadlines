@@ -78,7 +78,7 @@ public sealed class ArticleServiceCachingDecorator : IArticleService
         var cached = await _articleCache.TryGetByIdAsync(id, ct);
         if (cached != null) 
         {
-           CacheMetrics.Hit(layer: Layer); // METRICS cache hit
+            CacheMetrics.Hit(layer: Layer); // METRICS cache hit
             ctx.Information("ArticleCache: HIT");
             return cached;
         }
