@@ -105,20 +105,7 @@ public sealed class LruCommentCache : ICommentCache
         
         // Update cache size
         _metrics.SetSize("lru_articles", _articleAccessTimes.Count);
-    }
-
-    public Task<IEnumerable<Comment>?> GetAllAsync(CancellationToken ct = default)
-    {
-        // Not applicable for article-scoped LRU cache
-        _metrics.Miss("comments_all");
-        return Task.FromResult<IEnumerable<Comment>?>(null);
-    }
-
-    public Task SetAllAsync(IEnumerable<Comment> comments, CancellationToken ct = default)
-    {
-        // Not applicable for article-scoped LRU cache
-        return Task.CompletedTask;
-    }
+    }     
 
     public Task InvalidateAllAsync(CancellationToken ct = default)
     {

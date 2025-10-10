@@ -26,7 +26,6 @@ public class CommentsController : ControllerBase
         }
         catch (ProfanityUnavailableException)
         {
-            // Strict fail-fast for the assignment:
             // Tell callers our dependency is currently down.
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new
             {
@@ -38,14 +37,6 @@ public class CommentsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery] int? articleId, CancellationToken ct)
     {
-        // If articleId is provided, use the LRU-cached article-scoped query
-        if (articleId.HasValue)
-        {
-            var comments = await _commentService.GetCommentsByArticleId(articleId.Value, ct);
-            return Ok(comments);
-        }
-
-        // Otherwise return all comments (not cached)
         var allComments = await _commentService.GetComments();
         return Ok(allComments);
     }
