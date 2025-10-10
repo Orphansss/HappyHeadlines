@@ -6,6 +6,7 @@ namespace CommentService.Interfaces
     {
         Task<Comment> CreateComment(Comment comment, CancellationToken ct);
         Task<IEnumerable<Comment>> GetComments();
+        Task<IEnumerable<Comment>> GetCommentsByArticleId(int articleId, CancellationToken ct = default);
         Task<Comment?> GetCommentById(int id);
         Task<Comment?> UpdateComment(int id, Comment comment, CancellationToken ct);
         Task<bool> DeleteComment(int id, CancellationToken ct);

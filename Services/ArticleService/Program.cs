@@ -54,7 +54,10 @@ public class Program
         });
 
         builder.Services.AddSingleton<IArticleCache, ArticleCacheRedis>();
-        builder.Services.AddSingleton<ICacheMetrics, CacheMetrics>();
+        
+        // Register service-specific cache metrics (create instance immediately)
+        var articleMetrics = new CacheMetrics("article-service");
+        builder.Services.AddSingleton<ICacheMetrics>(articleMetrics);
 
         // Warmup background worker
         builder.Services.AddHostedService<ArticleCacheWarmupService>();
@@ -98,10 +101,6 @@ public class Program
         app.UseSwagger();
         app.UseSwaggerUI();
         app.MapControllers();
-
-
-
-
 
         // add traceId into all logs + request logging
         app.UseTraceIdEnricher();

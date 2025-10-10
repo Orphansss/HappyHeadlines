@@ -36,10 +36,18 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Comment>>> GetComments()
+    public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery] int? articleId, CancellationToken ct)
     {
-        var comments = await _commentService.GetComments();
-        return Ok(comments);
+        // If articleId is provided, use the LRU-cached article-scoped query
+        if (articleId.HasValue)
+        {
+            var comments = await _commentService.GetCommentsByArticleId(articleId.Value, ct);
+            return Ok(comments);
+        }
+
+        // Otherwise return all comments (not cached)
+        var allComments = await _commentService.GetComments();
+        return Ok(allComments);
     }
 
     [HttpGet("{id:int}")]

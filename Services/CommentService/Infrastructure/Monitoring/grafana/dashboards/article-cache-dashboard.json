@@ -1,0 +1,58 @@
+{
+  "dashboard": {
+    "title": "ArticleService Cache Monitoring",
+    "uid": "article-cache",
+    "timezone": "browser",
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Article By ID Hit Ratio",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "sum(rate(cache_hits_total{service=\"article-service\",cache=\"article_by_id\"}[1m])) / (sum(rate(cache_hits_total{service=\"article-service\",cache=\"article_by_id\"}[1m])) + sum(rate(cache_misses_total{service=\"article-service\",cache=\"article_by_id\"}[1m])))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 0.7, "color": "yellow" },
+                { "value": 0.9, "color": "green" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Latest Articles Hit Ratio",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "sum(rate(cache_hits_total{service=\"article-service\",cache=\"article_latest_list\"}[1m])) / (sum(rate(cache_hits_total{service=\"article-service\",cache=\"article_latest_list\"}[1m])) + sum(rate(cache_misses_total{service=\"article-service\",cache=\"article_latest_list\"}[1m])))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 0.7, "color": "yellow" },
+                { "value": 0.9, "color": "green" }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

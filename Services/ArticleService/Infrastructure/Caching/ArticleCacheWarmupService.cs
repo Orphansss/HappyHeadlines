@@ -13,13 +13,24 @@ namespace ArticleService.Infrastructure.Caching
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            log.LogWarning("ArticleCacheWarmupService.ExecuteAsync ENTERED");
+            log.LogInformation("ArticleCacheWarmupService starting...");
 
             var interval = TimeSpan.FromMinutes(cfg.GetValue("Cache:WarmupIntervalMinutes", 15));
             var windowDays = cfg.GetValue("Cache:WarmupWindowDays", 14);
 
+            // Initial warmup at startup
+            await WarmupCacheAsync(windowDays, stoppingToken);
 
-            // one-off warmup at startup
+            // Periodic warmup loop
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(interval, stoppingToken);
+                await WarmupCacheAsync(windowDays, stoppingToken);
+            }
+        }
+
+        private async Task WarmupCacheAsync(int windowDays, CancellationToken ct)
+        {
             try
             {
                 using var scope = sp.CreateScope();
@@ -31,44 +42,24 @@ namespace ArticleService.Infrastructure.Caching
                     .AsNoTracking()
                     .Where(a => a.PublishedAt >= since)
                     .OrderByDescending(a => a.PublishedAt)
-                    .ToListAsync(stoppingToken);
+                    .ToListAsync(ct);
 
-                await Task.WhenAll(recent.Select(a => cache.SetArticleAsync(a, stoppingToken)));
+                // Cache individual articles
+                await Task.WhenAll(recent.Select(a => cache.SetArticleAsync(a, ct)));
 
-                log.LogWarning("Article warmup (startup) complete. Cached {Count} recent articles.", recent.Count);
+                // Cache the latest articles list
+                await cache.SetLatestAsync(recent, ct);
+
+                // Optionally cache hot article IDs (if needed for your use case)
+                var hotIds = recent.Take(50).Select(a => a.Id);
+                await cache.UpsertHotSetAsync(hotIds, ct);
+
+                log.LogInformation("Article cache warmup complete. Cached {Count} articles from the last {Days} days.", 
+                    recent.Count, windowDays);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Article warmup (startup) failed.");
-            }
-
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-                    using var scope = sp.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<ArticleDbContext>();
-
-                    var since = DateTimeOffset.UtcNow.AddDays(-windowDays);
-
-                    var recent = await db.Articles
-                        .AsNoTracking()
-                        .Where(a => a.PublishedAt >= since)
-                        .OrderByDescending(a => a.PublishedAt)
-                        .ToListAsync(stoppingToken);
-
-                    // preload cache for all articles in the last 14 days
-                    var tasks = recent.Select(a => cache.SetArticleAsync(a, stoppingToken));
-                    await Task.WhenAll(tasks);
-
-                    log.LogWarning("Article warmup complete. Cached {Count} recent articles.", recent.Count);
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex, "Article warmup failed.");
-                }
-
-                await Task.Delay(interval, stoppingToken);
+                log.LogError(ex, "Article cache warmup failed.");
             }
         }
     }

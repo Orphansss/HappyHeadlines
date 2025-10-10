@@ -34,8 +34,8 @@ namespace ArticleService.Infrastructure.Caching
             _ns = cfg.GetValue<string>("Redis:InstanceName") ?? "happy:articles:";
             _log = log;
             _metrics = metrics;  
-
-            _articleTtlMinutes = cfg.GetValue("Cache:PerArticleTtlMinutes", 15);
+            
+            _articleTtlMinutes = cfg.GetValue("Cache:PerArticleTtlMinutes", 20160); // 14 days = 14 * 24 * 60 = 20,160 minutes
             _listTtlMinutes = cfg.GetValue("Cache:ListTtlMinutes", 5);
         }
 

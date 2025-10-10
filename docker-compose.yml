@@ -294,12 +294,16 @@ services:
       ASPNETCORE_URLS: "http://0.0.0.0:8081"
       ConnectionStrings__Default: "Server=comments-db,1433;Database=CommentsDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
       PROFANITY_BASEURL: "http://profanity-service:8080/"
+      Redis__ConnectionString: "redis:6379,abortConnect=false"
+      Redis__InstanceName: "happy:comments:"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
     depends_on:
       comments-db:
         condition: service_healthy
       profanity-service:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8081:8081"
@@ -432,7 +436,7 @@ services:
       - "9090:9090"
     depends_on:
       - article-service
-      # - comment-service    # uncomment when ready
+      - comment-service  
     <<: [*restart]  
 
   # ---------- Grafana (metrics dashboard) ----------
@@ -442,9 +446,12 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./Infrastructure/Monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./Infrastructure/Monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
-    <<: [*restart]   
+    <<: [*restart]
 
 volumes:
   # mssql-europe:
