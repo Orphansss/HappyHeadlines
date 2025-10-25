@@ -1,0 +1,26 @@
+name : CI/CD Pipeline - Happy Headlines
+
+on:
+ push:
+  branches:
+   - main
+ pull_request:
+  branches:
+   - main  
+
+jobs:
+ integration:
+  runs-on: ubuntu-latest
+
+  steps:
+   - name: Checkout Code
+     uses: actions/checkout@v4
+
+   - name: Build app
+     run: |
+       dotnet build Services/ArticleService
+       dotnet build Services/CommentService
+       dotnet build Services/DraftService
+       dotnet build Services/NewsletterService
+       dotnet build Services/ProfanityService
+       dotnet build Services/PublisherService
