@@ -8,7 +8,7 @@ public interface ICommentCache
     Task SetByIdAsync(Comment comment, CancellationToken ct = default);
     Task RemoveByIdAsync(int id, CancellationToken ct = default);
 
-    // Article-scoped operations (for LRU cache)
+    // Article-scoped operations (for LRU cache) aaaaaaaaaaaaaaaaaa
     Task<IEnumerable<Comment>?> GetCommentsByArticleIdAsync(int articleId, CancellationToken ct = default);
     Task SetCommentsByArticleIdAsync(int articleId, IEnumerable<Comment> comments, CancellationToken ct = default);
     Task InvalidateArticleAsync(int articleId, CancellationToken ct = default);
