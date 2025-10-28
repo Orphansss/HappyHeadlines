@@ -32,5 +32,5 @@ public class Subscriber
         UnsubscribedAtUtc = nowUtc;
     }
 
-    private static string Normalize(string email) => email.Trim().ToLowerInvariant();
+    public static string Normalize(string email) => email.Trim().ToLowerInvariant();
 }

@@ -217,6 +217,20 @@ services:
     ports:
       - "14341:1433"
     <<: [*healthcheck_mssql, *restart]
+    
+  # ---------- Subscriber Database ----------
+  subscriber-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_MEMORY_LIMIT_MB: "768"
+    volumes:
+      - mssql-subscriber:/var/opt/mssql
+    ports:
+      - "14342:1433"
+    <<: [ *healthcheck_mssql, *restart ]
 
   # ---------- ArticleService ----------
   article-service:
@@ -360,6 +374,23 @@ services:
       article-service:
         condition: service_started
     <<: [*healthcheck_tcp_8083, *restart]
+    
+  # ---------- SubscriberService ----------
+  subscriber-service:
+    build:
+      context: .
+      dockerfile: Services/SubscriberService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:8091"
+      ConnectionStrings__SubscriberDb: "Server=subscriber-db,1433;Database=SubscriberDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+      Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
+    depends_on:
+      subscriber-db:
+        condition: service_healthy
+    ports:
+      - "8091:8091"
+    <<: [ *healthcheck_tcp_8090, *restart ]
 
   # ---------- NGINX load balancer ----------
   lb:
@@ -407,4 +438,5 @@ volumes:
   mssql-comments:
   mssql-profanity:
   mssql-draft:
+  mssql-subscriber:
   seq-data:
