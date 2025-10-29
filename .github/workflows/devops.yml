@@ -41,6 +41,9 @@ jobs:
           - name: draft-service
             path: Services/DraftService
             dockerfile: Services/DraftService/Dockerfile
+          - name: subscriber-service
+            path: Services/SubscriberService
+            dockerfile: Services/SubscriberService/Dockerfile
 
     steps:
       - name: Checkout repository

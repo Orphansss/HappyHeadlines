@@ -58,6 +58,13 @@ x-healthcheck-tcp-8082: &healthcheck_tcp_8082
     retries: 30
     start_period: 20s
 
+x-healthcheck-tcp-8091: &healthcheck_tcp_8091
+  healthcheck:
+    test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8091' || exit 1"]
+    interval: 10s
+    timeout: 3s
+    retries: 30
+    start_period: 20s
 
 x-restart: &restart
   restart: unless-stopped
@@ -217,6 +224,20 @@ services:
     ports:
       - "14341:1433"
     <<: [*healthcheck_mssql, *restart]
+    
+  # ---------- Subscriber Database ----------
+  subscriber-db:
+    image: "${DB_IMAGE}"
+    platform: "${DB_PLATFORM}"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${DB_PASSWORD}"
+      MSSQL_MEMORY_LIMIT_MB: "768"
+    volumes:
+      - mssql-subscriber:/var/opt/mssql
+    ports:
+      - "14342:1433"
+    <<: [ *healthcheck_mssql, *restart ]
 
   # ---------- ArticleService ----------
   article-service:
@@ -360,6 +381,39 @@ services:
       article-service:
         condition: service_started
     <<: [*healthcheck_tcp_8083, *restart]
+    
+  # ---------- SubscriberService ----------
+  subscriber-service:
+    build:
+      context: .
+      dockerfile: Services/SubscriberService/Dockerfile
+    container_name: subscriber-service
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:8091"
+
+      ConnectionStrings__SubscriberDb: "Server=subscriber-db,1433;Database=SubscriberDb;User ID=${DB_USER};Password=${DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;"
+
+      FeatureHub__EdgeUrl: "http://featurehub:8085"
+      FeatureHub__ApiKey: "${FEATUREHUB_API_KEY}"
+
+      Rabbit__Uri: "amqp://guest:guest@rabbitmq:5672/"
+      Rabbit__Exchange: "subscriber.events"
+      Rabbit__QueueNewSubscriber: "subscriber.welcome.q"
+      Rabbit__RoutingKeyNewSubscriber: "subscriber.created"
+
+      Seq__Url: "http://seq:5341"
+      Otel__Endpoint: "http://jaeger:4317"
+    depends_on:
+      subscriber-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      featurehub:
+        condition: service_started
+    ports:
+      - "8091:8091"
+    <<: [ *healthcheck_tcp_8091, *restart ]
+
 
   # ---------- NGINX load balancer ----------
   lb:
@@ -394,6 +448,21 @@ services:
       - "16686:16686"  # Jaeger UI
       - "4317:4317"    # OTLP gRPC
     <<: [*restart]
+    
+  # ---------- FeatureHub (feature toggle) ----------
+  featurehub:
+    image: featurehub/party-server:latest
+    restart: unless-stopped
+    volumes:
+      - featurehub-h2-data:/db
+    ports:
+      - "8086:8085"   # UI/Edge exposed on host:8086
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8085/ || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
 
 volumes:
   # mssql-europe:
@@ -407,4 +476,7 @@ volumes:
   mssql-comments:
   mssql-profanity:
   mssql-draft:
+  mssql-subscriber:
   seq-data:
+  featurehub-h2-data:
+
