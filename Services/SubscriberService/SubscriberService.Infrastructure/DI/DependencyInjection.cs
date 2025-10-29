@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SubscriberService.Application.Abstractions;
+using SubscriberService.Infrastructure.Messaging.Topology;
 using SubscriberService.Infrastructure.Persistence;
 using SubscriberService.Infrastructure.Persistence.Repositories;
 
@@ -23,4 +24,10 @@ public static class DependencyInjection
 
         return services;
     }
+    public static IServiceCollection AddRabbitMqTopology(this IServiceCollection services)
+    {
+        services.AddHostedService<TopologyBootstrapper>();
+        return services;
+    }
+    
 }
