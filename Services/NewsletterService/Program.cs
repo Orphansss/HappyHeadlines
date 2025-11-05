@@ -12,6 +12,9 @@ namespace NewsletterService
             // central logging + tracing (Seq + Jaeger) via your helper
             builder.AddMonitoring("NewsletterService");
 
+            // RabbitMQ (publisher)
+            builder.Services.AddSingleton<INewsletterPublisher, RabbitMqNewsletterPublisher>();
+
             // HttpClient to ArticleService (URL comes from env)
             var articleBaseUrl =
                 builder.Configuration["ArticleService:BaseUrl"] ??

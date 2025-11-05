@@ -4,8 +4,12 @@ using SubscriberService.Infrastructure.FeatureToggles;
 using SubscriberService.Infrastructure.Messaging;        
 using SubscriberService.Application.Abstractions;
 using SubscriberService.Api.Middleware;
+using Monitoring;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// central logging + tracing (Seq + Jaeger) via your helper
+builder.AddMonitoring("NewsletterService");
 
 // MVC + Swagger
 builder.Services.AddControllers();

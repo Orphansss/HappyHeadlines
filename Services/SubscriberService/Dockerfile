@@ -8,30 +8,30 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project files (for restore caching)
-COPY Services/SubscriberService/SubscriberService.Api/SubscriberService.Api.csproj SubscriberService.Api/
-COPY Services/SubscriberService/SubscriberService.Application/SubscriberService.Application.csproj SubscriberService.Application/
-COPY Services/SubscriberService/SubscriberService.Domain/SubscriberService.Domain.csproj SubscriberService.Domain/
-COPY Services/SubscriberService/SubscriberService.Infrastructure/SubscriberService.Infrastructure.csproj SubscriberService.Infrastructure/
+# (optional) copy solution for nicer restore output & caching
+# COPY HappyHeadlines.sln ./
 
-# Restore dependencies
-RUN dotnet restore SubscriberService.Api/SubscriberService.Api.csproj
+# Copy ONLY project files first to leverage layer caching on restore
+COPY Services/SubscriberService/SubscriberService.Api/SubscriberService.Api.csproj Services/SubscriberService/SubscriberService.Api/
+COPY Services/SubscriberService/SubscriberService.Application/SubscriberService.Application.csproj Services/SubscriberService/SubscriberService.Application/
+COPY Services/SubscriberService/SubscriberService.Domain/SubscriberService.Domain.csproj Services/SubscriberService/SubscriberService.Domain/
+COPY Services/SubscriberService/SubscriberService.Infrastructure/SubscriberService.Infrastructure.csproj Services/SubscriberService/SubscriberService.Infrastructure/
+COPY Infrastructure/Monitoring/Monitoring.csproj Infrastructure/Monitoring/
 
-# Copy the entire source tree
-COPY Services/SubscriberService/. .
+# Restore the API (MSBuild will resolve the ProjectReference relatively)
+RUN dotnet restore Services/SubscriberService/SubscriberService.Api/SubscriberService.Api.csproj
 
-# Build the project
-WORKDIR /src/SubscriberService.Api
-RUN dotnet build SubscriberService.Api.csproj -c $BUILD_CONFIGURATION -o /app/build
+# Now copy the actual source code for those projects
+COPY Services/SubscriberService/ Services/SubscriberService/
+COPY Infrastructure/Monitoring/ Infrastructure/Monitoring/
 
-# ---------- Publish stage ----------
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish SubscriberService.Api.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Build/Publish from the real path (preserve original structure)
+WORKDIR /src/Services/SubscriberService/SubscriberService.Api
+RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # ---------- Final runtime stage ----------
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://0.0.0.0:8091
 ENTRYPOINT ["dotnet", "SubscriberService.Api.dll"]

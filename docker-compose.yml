@@ -375,11 +375,18 @@ services:
       ArticleService__BaseUrl: "http://article-service:8080"
       Seq__Url: "http://seq:5341"
       Otel__Endpoint: "http://jaeger:4317"
+
+      Rabbit__Uri: "amqp://guest:guest@rabbitmq:5672/"
+      Rabbit__Exchange: "subscriber.events"            
+      Rabbit__RoutingKeyNewSubscriber: "subscriber.created"
+
     ports:
       - "8083:8083"
     depends_on:
       article-service:
         condition: service_started
+      rabbitmq:                                        
+        condition: service_healthy
     <<: [*healthcheck_tcp_8083, *restart]
     
   # ---------- SubscriberService ----------
