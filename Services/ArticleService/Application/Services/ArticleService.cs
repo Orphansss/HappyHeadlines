@@ -21,7 +21,7 @@ public sealed class ArticleService(ArticleDbContext db) : IArticleService
         if (input.PublishedAt == default)
             input.PublishedAt = DateTimeOffset.UtcNow;
 
-        Log.Information("Creating Article with ArticleId: {ArticleId}, AuthorId: {AuthorId}, Title: {Title}",input.Id, input.AuthorId, input.Title);
+        Log.Information("Creating Article with AuthorId: {AuthorId}, Title: {Title}",input.Id, input.AuthorId, input.Title);
 
         db.Articles.Add(input);
         await db.SaveChangesAsync(ct);
