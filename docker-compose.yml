@@ -276,6 +276,8 @@ services:
       #   condition: service_healthy
       articles-global-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
     <<: [*healthcheck_tcp_8080, *restart]
     # (No ports here – exposed via lb:8080)
 
