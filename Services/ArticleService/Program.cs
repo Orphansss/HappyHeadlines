@@ -47,7 +47,7 @@ namespace ArticleService
             var app = builder.Build();
 
             // Kør migrationer for ALLE connection strings ved opstart (en gang)
-            using (var scope = app.Services.CreateScope())
+            /*using (var scope = app.Services.CreateScope())
             {
                 var cfg = scope.ServiceProvider.GetRequiredService<IConfiguration>();
                 var allConns = cfg.GetSection("ConnectionStrings").GetChildren();
@@ -66,7 +66,7 @@ namespace ArticleService
                     using var db = new ArticleDbContext(opts);
                     db.Database.Migrate();
                 }
-            }
+            }*/
 
             app.MapGet("/health", () => Results.Ok(new { ok = true, service = "article-service" }));
             app.MapGet("/", () => Results.Redirect("/swagger"));
