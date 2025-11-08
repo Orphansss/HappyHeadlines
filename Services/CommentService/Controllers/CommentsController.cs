@@ -2,6 +2,7 @@ using CommentService.Exceptions;
 using CommentService.Models;
 using CommentService.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace CommentService.Controllers;
 
@@ -19,15 +20,19 @@ public class CommentsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Comment>> CreateComment([FromBody] Comment comment, CancellationToken ct)
     {
+        Log.Information("CreateComment received. TraceId={TraceId}", HttpContext.TraceIdentifier);
+
         try
         {
             var created = await _commentService.CreateComment(comment, ct);
-            return CreatedAtAction(nameof(GetCommentById), new { id = created.Id }, created);
+            Log.Information("Comment created. Id={Id} TraceId={TraceId}", created.Id, HttpContext.TraceIdentifier);
+
+            return CreatedAtAction(nameof(CreateComment), new { id = created.Id }, created);
         }
-        catch (ProfanityUnavailableException)
+        catch (ProfanityUnavailableException ex)
         {
-            // Strict fail-fast for the assignment:
-            // Tell callers our dependency is currently down.
+            Log.Warning(ex, "ProfanityService unavailable → 503. TraceId={TraceId}", HttpContext.TraceIdentifier);
+
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new
             {
                 error = "ProfanityService unavailable. Please try again shortly."
