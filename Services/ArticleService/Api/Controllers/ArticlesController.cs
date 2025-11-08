@@ -33,7 +33,7 @@ public sealed class ArticlesController(IArticleService articleService) : Control
         Ok(await articleService.GetAllAsync(ct));
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Article>> GetById(int id, CancellationToken ct)
+    public async Task<ActionResult<ArticleDto>> GetById(int id, CancellationToken ct)
     {
         var item = await articleService.GetByIdAsync(id, ct);
         return item is null ? NotFound() : Ok(item);
