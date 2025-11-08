@@ -27,12 +27,14 @@ namespace CommentService
             var sharedBreaker = HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .CircuitBreakerAsync(
-                    handledEventsAllowedBeforeBreaking: 2,           
+                    handledEventsAllowedBeforeBreaking: 2,
                     durationOfBreak: TimeSpan.FromSeconds(10),
                     onBreak: (outcome, span) =>
-                        Console.WriteLine($"[Polly] Circuit OPEN for {span}. Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}"),
-                    onReset: () => Console.WriteLine("[Polly] Circuit CLOSED."),
-                    onHalfOpen: () => Console.WriteLine("[Polly] Circuit HALF-OPEN.")
+                        Log.Warning("Polly Circuit OPEN for {BreakSeconds}s. Reason={Reason}",
+                            span.TotalSeconds,
+                            outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()),
+                    onReset: () => Log.Information("Polly Circuit CLOSED"),
+                    onHalfOpen: () => Log.Information("Polly Circuit HALF-OPEN")
                 );
 
             builder.Services
@@ -46,14 +48,19 @@ namespace CommentService
                 // 1) Retry (exponential backoff)
                 .AddPolicyHandler(_ =>
                     HttpPolicyExtensions.HandleTransientHttpError()
-                        .WaitAndRetryAsync(new[]
+                        .WaitAndRetryAsync(
+                            new[]
                             {
                                 TimeSpan.FromMilliseconds(200),
                                 TimeSpan.FromMilliseconds(400),
                                 TimeSpan.FromMilliseconds(800)
                             },
                             onRetry: (outcome, delay, attempt, _) =>
-                                Console.WriteLine($"[Polly] Retry {attempt} after {delay}. Reason: {outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString()}")))
+                                Log.Warning("Polly Retry {Attempt} after {Delay}ms. Reason={Reason}",
+                                    attempt,
+                                    delay.TotalMilliseconds,
+                                    outcome.Exception?.Message ?? outcome.Result.StatusCode.ToString())
+                        ))
                 // 2) Circuit Breaker (fail fast when dependency is unhealthy)
                 // Use the shared breaker instance
                 .AddPolicyHandler(sharedBreaker);

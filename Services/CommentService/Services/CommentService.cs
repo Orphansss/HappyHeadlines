@@ -4,7 +4,8 @@ using CommentService.Interfaces;
 using CommentService.Exceptions;
 using CommentService.Profanity.Dtos;    
 using Microsoft.EntityFrameworkCore;
-using Polly.CircuitBreaker;             
+using Polly.CircuitBreaker;
+using Serilog;
 
 namespace CommentService.Services
 {
@@ -21,31 +22,41 @@ namespace CommentService.Services
 
         public async Task<Comment> CreateComment(Comment comment, CancellationToken ct = default)
         {
+            Log.Information("Creating comment for AuthorId={AuthorId}", comment.AuthorId);
+
             // 1) Call ProfanityService (protected by Retry + CircuitBreaker)
             try
             {
+                Log.Debug("Calling ProfanityService for cleansing. Length={Len}", comment.Content?.Length ?? 0);
+
                 var result = await _profanity.FilterAsync(new FilterRequestDto(comment.Content), ct);
-                comment.Content = result.CleanedText;     // overwrite with filtered text
+
+                comment.Content = result.CleanedText; // overwrite with filtered text
+
+                Log.Debug("ProfanityService OK. CleanedLength={Len}", comment.Content?.Length ?? 0);
             }
             catch (BrokenCircuitException ex)
             {
-                // Circuit is OPEN → fail fast (let controller map to 503)
+                Log.Warning(ex, "Circuit OPEN when calling ProfanityService");
                 throw new ProfanityUnavailableException(inner: ex);
             }
             catch (TaskCanceledException ex)
             {
-                // Timeout → treat as unavailable
+                Log.Warning(ex, "Timeout calling ProfanityService");
                 throw new ProfanityUnavailableException(inner: ex);
             }
             catch (HttpRequestException ex)
             {
-                // Network failure → treat as unavailable
+                Log.Warning(ex, "Network failure calling ProfanityService");
                 throw new ProfanityUnavailableException(inner: ex);
             }
 
             // 2) Persist
             _db.Comments.Add(comment);
             await _db.SaveChangesAsync(ct);
+
+            Log.Information("Comment persisted. CommentId={Id}", comment.Id);
+
             return comment;
         }
 
