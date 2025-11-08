@@ -40,7 +40,7 @@ public sealed class ArticlesController(IArticleService articleService) : Control
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<Article>> Update(int id, [FromBody] Article input, CancellationToken ct)
+    public async Task<ActionResult<UpdateArticleDto>> Update(int id, [FromBody] Article input, CancellationToken ct)
     {
         var updated = await articleService.UpdateAsync(id, input, ct);
         return updated is null ? NotFound() : Ok(updated);
