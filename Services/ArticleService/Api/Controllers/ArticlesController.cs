@@ -29,7 +29,7 @@ public sealed class ArticlesController(IArticleService articleService) : Control
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Article>>> GetAll(CancellationToken ct) =>
+    public async Task<ActionResult<IEnumerable<ArticleListDto>>> GetAll(CancellationToken ct) =>
         Ok(await articleService.GetAllAsync(ct));
 
     [HttpGet("{id:int}")]
