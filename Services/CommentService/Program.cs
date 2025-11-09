@@ -36,7 +36,8 @@ namespace CommentService
                     onReset: () => Log.Information("Polly Circuit CLOSED"),
                     onHalfOpen: () => Log.Information("Polly Circuit HALF-OPEN")
                 );
-
+            
+            // HttpClient to ProfanityService 
             builder.Services
                 .AddHttpClient<IProfanityService, ProfanityServiceHttp>(client =>
                 {
