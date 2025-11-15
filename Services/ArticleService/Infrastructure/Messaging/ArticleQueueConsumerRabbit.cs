@@ -6,13 +6,15 @@ using RabbitMQ.Client.Events;
 using Serilog;
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics;                          
+using OpenTelemetry;                                 
+using OpenTelemetry.Context.Propagation;             
 
 namespace ArticleService.Infrastructure.Messaging;
 
 public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueueConsumer
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<ArticleQueueConsumerRabbit> _logger;
     private readonly string _exchange = "articles";
     private readonly string _queueName = "article-service-consumer";
     private readonly string _routingKey = "article.publish.request.#";
@@ -20,10 +22,13 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
     private IConnection? _connection;
     private IModel? _channel;
 
-    public ArticleQueueConsumerRabbit(IServiceProvider serviceProvider, ILogger<ArticleQueueConsumerRabbit> logger)
+    // NEW: activity source for manual spans in ArticleService
+    private static readonly ActivitySource ActivitySource = new("ArticleService");
+    private static readonly TextMapPropagator Propagator = Propagators.DefaultTextMapPropagator;
+
+    public ArticleQueueConsumerRabbit(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _logger = logger;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,6 +51,25 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += async (_, ea) =>
         {
+            // Extract parent trace context from RMQ headers (if present)
+            var parentCtx = Propagator.Extract(default, ea.BasicProperties?.Headers, static (hdrs, key) =>
+            {
+                if (hdrs is null) return Array.Empty<string>();
+                if (!hdrs.TryGetValue(key, out var obj) || obj is not byte[] bytes) return Array.Empty<string>();
+                return new[] { Encoding.UTF8.GetString(bytes) }; // convert header bytes -> string
+            });
+            Baggage.Current = parentCtx.Baggage;
+
+            // Start a CONSUMER span so Jaeger shows the queue hop
+            using var activity = ActivitySource.StartActivity(
+                "RabbitMQ Consume article",
+                ActivityKind.Consumer,
+                parentCtx.ActivityContext);
+
+            activity?.SetTag("messaging.system", "rabbitmq"); // small metadata tags
+            activity?.SetTag("messaging.destination", _exchange);
+            activity?.SetTag("messaging.operation", "process");
+
             try
             {
                 var body = Encoding.UTF8.GetString(ea.Body.Span);
@@ -86,17 +110,16 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
                 }
                 
                 await db.SaveChangesAsync(stoppingToken);
-                
+
                 _channel.BasicAck(ea.DeliveryTag, multiple: false);
-                
+
+                // helpful correlation in logs
                 Log.Information("Article queue consumed {article}", System.Text.Json.JsonSerializer.Serialize(article));
-                _logger.LogInformation("Article queue consumed {article}", System.Text.Json.JsonSerializer.Serialize(article));
             }
             catch (Exception e)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, e.Message);   // NEW: mark span as error
                 Log.Error(e, "Failed to consume article message...");
-                _logger.LogError(e, "Failed to consume article message");
-                
                 _channel?.BasicNack(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };
@@ -107,19 +130,8 @@ public sealed class ArticleQueueConsumerRabbit : BackgroundService, IArticleQueu
 
     public override void Dispose()
     {
-        
         _channel?.Dispose();
         _connection?.Dispose();
         base.Dispose();
     }
-
 }
-
-
-
-
-
-
-
-
-

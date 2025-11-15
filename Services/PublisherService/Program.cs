@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using PublisherService.Application.Abstractions;
 using PublisherService.Infrastructure.Messaging;
@@ -5,6 +6,10 @@ using PublisherService.Infrastructure.Profanity;
 using PublisherService.Application.UseCases.PublishArticle;
 using Serilog;
 using Monitoring;
+
+// Force W3C trace format for all Activities in this process (must be before builder/any spans)
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
 
 var builder = WebApplication.CreateBuilder(args);
 

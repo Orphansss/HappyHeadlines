@@ -1,3 +1,5 @@
+using System.Diagnostics;               
+using System.Text;                     
 using System.Text.Json;
 using PublisherService.Application.Abstractions;
 using PublisherService.Domain.Entities;
@@ -74,11 +76,24 @@ public sealed class ArticleQueuePublisherRabbit : IArticleQueuePublisher, IDispo
 
         // Set RabbitMQ message properties
         var props = _channel.CreateBasicProperties();
-        props.Persistent = true; // survive broker restarts
-        props.ContentType = "application/json";
-        props.MessageId = article.Id.ToString();
+        props.Persistent   = true;                 
+        props.ContentType  = "application/json";
+        props.MessageId    = article.Id.ToString();
         if (!string.IsNullOrWhiteSpace(idempotencyKey))
             props.CorrelationId = idempotencyKey;
+
+        // Ensure headers dictionary exists (for trace context + metadata)
+        props.Headers ??= new Dictionary<string, object>();
+
+        // Inject W3C trace context so the consumer can join the same trace
+        var traceparent = Activity.Current?.Id;              
+        var tracestate  = Activity.Current?.TraceStateString;
+
+        if (!string.IsNullOrWhiteSpace(traceparent))
+            props.Headers["traceparent"] = Encoding.UTF8.GetBytes(traceparent); // RabbitMQ headers expect byte[]
+
+        if (!string.IsNullOrWhiteSpace(tracestate))
+            props.Headers["tracestate"] = Encoding.UTF8.GetBytes(tracestate);
 
         // Publish to the exchange with the configured routing key
         _channel.BasicPublish(

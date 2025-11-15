@@ -1,12 +1,16 @@
 using PublisherService.Application.Abstractions;
 using PublisherService.Domain.Entities;
 using Serilog;
+using System.Diagnostics;
 
 namespace PublisherService.Application.UseCases.PublishArticle;
 
 // The orchestrator (application service) that executes the use case
 public sealed class PublishArticleHandler
 {
+    // Activity source for manual spans in PublisherService
+    private static readonly ActivitySource ActivitySource = new("PublisherService");
+
     private readonly IProfanityClient _profanity;
     private readonly IArticleQueuePublisher _publisher;
     private readonly IIdGenerator _ids;
@@ -37,10 +41,21 @@ public sealed class PublishArticleHandler
         );
 
         // 3) Publish to queue
-        await _publisher.PublishAsync(article, cmd.IdempotencyKey, ct);
+        // Wrap publish in a PRODUCER span (so Jaeger shows the messaging hop)
+        using (var activity = ActivitySource.StartActivity("RabbitMQ Publish article", ActivityKind.Producer))
+        {
+            // small tags for clarity in Jaeger
+            activity?.SetTag("messaging.system", "rabbitmq");
+            activity?.SetTag("messaging.destination", "articles");
+            activity?.SetTag("messaging.operation", "publish");
+            activity?.SetTag("article.id", article.Id);
+
+            // The RabbitMQ publisher implementation should inject the current W3C trace context
+            // (traceparent/tracestate) into IBasicProperties.Headers before BasicPublish.
+            await _publisher.PublishAsync(article, cmd.IdempotencyKey, ct);
+        }
 
         // 4) Ack
-        Console.WriteLine("Published article: " + System.Text.Json.JsonSerializer.Serialize(article));
         Log.Information("Published article: {Article}", System.Text.Json.JsonSerializer.Serialize(article));
 
         return new PublishArticleResult(PublicationId: article.Id, AcceptedAt: DateTimeOffset.UtcNow);

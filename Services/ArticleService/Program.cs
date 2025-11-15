@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ArticleService.Application.Interfaces;
 using ArticleService.Infrastructure;
 using ArticleService.Infrastructure.Messaging;
@@ -11,6 +12,10 @@ namespace ArticleService
     {
         public static void Main(string[] args)
         {
+            // Force W3C trace format for all Activities in this process (must be before builder/any spans)
+            Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+            Activity.ForceDefaultIdFormat = true;
+            
             var builder = WebApplication.CreateBuilder(args);
 
             builder.AddMonitoring("ArticleService"); // adding SeriLog now through or Monitoring class
