@@ -24,14 +24,17 @@ namespace CommentService.Services
         {
             Log.Information("Creating comment for AuthorId={AuthorId}", comment.AuthorId);
 
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(500));
+
+
             // 1) Call ProfanityService (protected by Retry + CircuitBreaker)
             try
             {
                 Log.Debug("Calling ProfanityService for cleansing. Length={Len}", comment.Content?.Length ?? 0);
 
-                var result = await _profanity.FilterAsync(new FilterRequestDto(comment.Content), ct);
-
-                comment.Content = result.CleanedText; // overwrite with filtered text
+                var result = await _profanity.FilterAsync(new FilterRequestDto(comment.Content), timeoutCts.Token);
+                comment.Content = result.CleanedText;
 
                 Log.Debug("ProfanityService OK. CleanedLength={Len}", comment.Content?.Length ?? 0);
             }
