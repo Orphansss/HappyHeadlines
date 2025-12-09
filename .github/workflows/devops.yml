@@ -84,4 +84,3 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILD_CONFIGURATION=Release
-            
